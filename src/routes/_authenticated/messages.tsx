@@ -150,7 +150,8 @@ function MessagesPage() {
     const { error } = await supabase.storage.from("chat-media").upload(path, file);
     if (error) { toast.error(error.message); return; }
     const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 60);
-    await supabase.from("messages").insert({ conversation_id: active, sender_id: user.id, kind: "image", media_url: signed?.signedUrl ?? path });
+    const { data: inserted } = await supabase.from("messages").insert({ conversation_id: active, sender_id: user.id, kind: "image", media_url: signed?.signedUrl ?? path }).select().single();
+    if (inserted) { const m = inserted as Msg; setMessages((prev) => prev.some((x) => x.id === m.id) ? prev : [...prev, m]); }
   };
 
   // --- Voice recording ---
@@ -176,7 +177,8 @@ function MessagesPage() {
         const { error } = await supabase.storage.from("chat-media").upload(path, blob, { contentType: blob.type });
         if (error) { toast.error(error.message); return; }
         const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 60);
-        await supabase.from("messages").insert({ conversation_id: active, sender_id: user.id, kind: "voice", media_url: signed?.signedUrl ?? path, duration_ms: duration });
+        const { data: inserted } = await supabase.from("messages").insert({ conversation_id: active, sender_id: user.id, kind: "voice", media_url: signed?.signedUrl ?? path, duration_ms: duration }).select().single();
+        if (inserted) { const m = inserted as Msg; setMessages((prev) => prev.some((x) => x.id === m.id) ? prev : [...prev, m]); }
       };
       recStartRef.current = Date.now();
       rec.start();
