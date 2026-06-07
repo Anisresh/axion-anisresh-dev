@@ -3,8 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { toast } from "sonner";
-import { Send, Smile, Image as ImageIcon, Hash, Plus, Mic, Square, Play, Pause } from "lucide-react";
+import { Send, Smile, Image as ImageIcon, Hash, Plus, Mic, Square, Play, Pause, Settings2, UserPlus, UserMinus, Pencil, Upload, X } from "lucide-react";
 import EmojiPicker, { Theme } from "emoji-picker-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const Route = createFileRoute("/_authenticated/groups")({
   head: () => ({ meta: [{ title: "Groups & Lobbies · Axion6" }] }),
