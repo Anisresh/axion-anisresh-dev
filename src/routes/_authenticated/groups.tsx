@@ -156,7 +156,7 @@ function GroupsPage() {
         <ul className="space-y-1">
           {lobbies.map((l) => (
             <li key={l.id}>
-              <button onClick={() => setSelected({ kind: "lobby", id: l.id })} className={`w-full text-left flex items-center gap-2.5 p-2.5 rounded-2xl transition-soft ${selected?.id === l.id ? "bg-primary/10 text-primary" : "hover:bg-muted/60"}`}>
+              <button onClick={() => setSelected({ kind: "lobby", id: l.id })} className={`w-full text-left flex items-center gap-2.5 p-2.5 rounded-2xl transition-soft ${selected?.id === l.id ? "bg-primary text-primary-foreground shadow-glow" : "hover:bg-muted/60 text-foreground"}`}>
                 <Hash className="size-4 opacity-70" />
                 <span className="text-sm font-medium">{l.name}</span>
               </button>
