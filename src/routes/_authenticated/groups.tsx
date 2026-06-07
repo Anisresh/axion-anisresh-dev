@@ -104,7 +104,7 @@ function GroupsPage() {
     });
     const ch = supabase.channel(`${selected.kind}-${selected.id}`).on("postgres_changes", { event: "INSERT", schema: "public", table, filter: `${col}=eq.${selected.id}` }, async (payload) => {
       const m = payload.new as GenericMsg;
-      setMessages((ms) => [...ms, m]);
+      setMessages((ms) => ms.some((x) => x.id === m.id) ? ms : [...ms.filter((x) => !x.id.startsWith("temp-") || x.content !== m.content || x.sender_id !== m.sender_id), m]);
       if (!profiles[m.sender_id]) {
         const { data: p } = await supabase.from("profiles").select("id, username, display_name").eq("id", m.sender_id).maybeSingle();
         if (p) setProfiles((cur) => ({ ...cur, [m.sender_id]: p as Profile }));
@@ -119,11 +119,23 @@ function GroupsPage() {
     if (!text.trim() || !selected || !user) return;
     const content = text;
     setText("");
-    if (selected.kind === "lobby") {
-      await supabase.from("lobby_messages").insert({ lobby_id: selected.id, sender_id: user.id, content, kind: "text" });
-    } else {
-      await supabase.from("messages").insert({ conversation_id: selected.id, sender_id: user.id, content, kind: "text" });
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: GenericMsg = { id: tempId, sender_id: user.id, content, media_url: null, kind: "text", created_at: new Date().toISOString() };
+    setMessages((ms) => [...ms, optimistic]);
+    const table = selected.kind === "lobby" ? "lobby_messages" : "messages";
+    const payload: any = selected.kind === "lobby"
+      ? { lobby_id: selected.id, sender_id: user.id, content, kind: "text" }
+      : { conversation_id: selected.id, sender_id: user.id, content, kind: "text" };
+    const { data, error } = await (supabase.from(table) as any).insert(payload).select().single();
+    if (error) {
+      setMessages((ms) => ms.filter((x) => x.id !== tempId));
+      toast.error(error.message);
+      return;
     }
+    setMessages((ms) => {
+      const without = ms.filter((x) => x.id !== tempId);
+      return without.some((x) => x.id === data.id) ? without : [...without, data as GenericMsg];
+    });
   };
 
   const onUpload = async (file: File) => {
@@ -156,7 +168,7 @@ function GroupsPage() {
         <ul className="space-y-1">
           {lobbies.map((l) => (
             <li key={l.id}>
-              <button onClick={() => setSelected({ kind: "lobby", id: l.id })} className={`w-full text-left flex items-center gap-2.5 p-2.5 rounded-2xl transition-soft ${selected?.id === l.id ? "bg-primary/10 text-primary" : "hover:bg-muted/60"}`}>
+              <button onClick={() => setSelected({ kind: "lobby", id: l.id })} className={`w-full text-left flex items-center gap-2.5 p-2.5 rounded-2xl transition-soft ${selected?.id === l.id ? "bg-primary text-primary-foreground shadow-glow" : "hover:bg-muted/60 text-foreground"}`}>
                 <Hash className="size-4 opacity-70" />
                 <span className="text-sm font-medium">{l.name}</span>
               </button>
@@ -177,8 +189,8 @@ function GroupsPage() {
         <ul className="space-y-1">
           {groups.map((g) => (
             <li key={g.id}>
-              <button onClick={() => setSelected({ kind: "group", id: g.id })} className={`w-full text-left flex items-center gap-2.5 p-2.5 rounded-2xl transition-soft ${selected?.id === g.id ? "bg-primary/10 text-primary" : "hover:bg-muted/60"}`}>
-                <div className="size-7 rounded-xl bg-primary/10 text-primary grid place-items-center text-xs font-semibold">{g.name?.[0]?.toUpperCase() ?? "G"}</div>
+              <button onClick={() => setSelected({ kind: "group", id: g.id })} className={`w-full text-left flex items-center gap-2.5 p-2.5 rounded-2xl transition-soft ${selected?.id === g.id ? "bg-primary text-primary-foreground shadow-glow" : "hover:bg-muted/60 text-foreground"}`}>
+                <div className={`size-7 rounded-xl grid place-items-center text-xs font-semibold ${selected?.id === g.id ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/15 text-primary"}`}>{g.name?.[0]?.toUpperCase() ?? "G"}</div>
                 <span className="text-sm font-medium truncate">{g.name}</span>
               </button>
             </li>
