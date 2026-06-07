@@ -58,7 +58,7 @@ function XaiPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] gap-4 p-4">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }} className="flex h-[calc(100vh-3.5rem)] gap-4 p-4">
       <aside className="w-72 shrink-0 bg-card-gradient border border-border/60 rounded-3xl shadow-soft p-4 overflow-y-auto">
         <button onClick={() => { setActive(null); setMessages([]); }} className="w-full h-10 px-3 rounded-2xl bg-primary-gradient text-primary-foreground text-sm font-medium shadow-glow inline-flex items-center justify-center gap-2 hover:opacity-90 transition-soft">
           <Plus className="size-4" /> New chat
