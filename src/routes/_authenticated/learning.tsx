@@ -31,9 +31,32 @@ function LearningPage() {
   useEffect(() => { load(); }, [user]);
 
   const onFile = async (file: File) => {
-    const text = await file.text();
-    setSource(text);
-    if (!title) setTitle(file.name.replace(/\.[^.]+$/, ""));
+    try {
+      if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) {
+        toast.info("Extracting PDF text…");
+        const pdfjs: any = await import("pdfjs-dist/build/pdf.mjs");
+        // @ts-ignore - worker URL
+        const workerUrl = (await import("pdfjs-dist/build/pdf.worker.mjs?url")).default;
+        pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+        const buf = await file.arrayBuffer();
+        const doc = await pdfjs.getDocument({ data: buf }).promise;
+        let out = "";
+        const maxPages = Math.min(doc.numPages, 50);
+        for (let i = 1; i <= maxPages; i++) {
+          const page = await doc.getPage(i);
+          const tc = await page.getTextContent();
+          out += tc.items.map((it: any) => it.str).join(" ") + "\n\n";
+        }
+        setSource(out.trim());
+      } else {
+        const text = await file.text();
+        setSource(text);
+      }
+      if (!title) setTitle(file.name.replace(/\.[^.]+$/, ""));
+      toast.success("File loaded");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't read file");
+    }
   };
 
   const onGenerate = async () => {
