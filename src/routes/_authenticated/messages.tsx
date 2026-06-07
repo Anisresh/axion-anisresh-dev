@@ -129,14 +129,25 @@ function MessagesPage() {
     if (!text.trim() || !active || !user) return;
     const content = text;
     setText("");
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: Msg = { id: tempId, conversation_id: active, sender_id: user.id, kind: "text", content, media_url: null, duration_ms: null, created_at: new Date().toISOString() };
+    setMessages((prev) => [...prev, optimistic]);
     const { data, error } = await supabase
       .from("messages")
       .insert({ conversation_id: active, sender_id: user.id, kind: "text", content })
       .select()
       .single();
-    if (error) { toast.error(error.message); setText(content); return; }
+    if (error) {
+      toast.error(error.message);
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      setText(content);
+      return;
+    }
     const m = data as Msg;
-    setMessages((prev) => prev.some((x) => x.id === m.id) ? prev : [...prev, m]);
+    setMessages((prev) => {
+      const without = prev.filter((x) => x.id !== tempId);
+      return without.some((x) => x.id === m.id) ? without : [...without, m];
+    });
   };
 
   const broadcastTyping = () => {
