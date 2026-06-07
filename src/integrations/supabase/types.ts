@@ -458,7 +458,7 @@ export type Database = {
     Enums: {
       conversation_kind: "dm" | "group"
       friendship_status: "pending" | "accepted" | "blocked"
-      message_kind: "text" | "image" | "voice"
+      message_kind: "text" | "image" | "voice" | "file"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -588,7 +588,7 @@ export const Constants = {
     Enums: {
       conversation_kind: ["dm", "group"],
       friendship_status: ["pending", "accepted", "blocked"],
-      message_kind: ["text", "image", "voice"],
+      message_kind: ["text", "image", "voice", "file"],
     },
   },
 } as const
