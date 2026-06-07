@@ -345,11 +345,8 @@ function MessagesPage() {
                 {messages.map((m) => {
                   const mine = m.sender_id === user?.id;
                   const rx = reactions[m.id] ?? [];
-                  const grouped = useMemo(() => {
-                    const g: Record<string, Reaction[]> = {};
-                    rx.forEach((r) => { (g[r.emoji] ??= []).push(r); });
-                    return g;
-                  }, [rx.length]);
+                  const grouped: Record<string, Reaction[]> = {};
+                  rx.forEach((r) => { (grouped[r.emoji] ??= []).push(r); });
                   return (
                     <motion.div key={m.id} initial={{ opacity: 0, y: 6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} className={`group flex ${mine ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-md flex flex-col ${mine ? "items-end" : "items-start"}`}>
