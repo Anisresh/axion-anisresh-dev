@@ -1,0 +1,272 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/useAuth";
+import { toast } from "sonner";
+import { Send, Smile, Image as ImageIcon, Hash, Plus, Mic, Square, Play, Pause } from "lucide-react";
+import EmojiPicker, { Theme } from "emoji-picker-react";
+
+export const Route = createFileRoute("/_authenticated/groups")({
+  head: () => ({ meta: [{ title: "Groups & Lobbies · Axion6" }] }),
+  component: GroupsPage,
+});
+
+type Lobby = { id: string; slug: string; name: string; description: string | null };
+type Conv = { id: string; kind: "dm" | "group"; name: string | null; owner_id: string | null; icon_url: string | null };
+type GenericMsg = { id: string; sender_id: string; content: string | null; media_url: string | null; kind: string; created_at: string };
+type Profile = { id: string; username: string; display_name: string };
+
+function GroupsPage() {
+  const { user } = useAuth();
+  const [lobbies, setLobbies] = useState<Lobby[]>([]);
+  const [groups, setGroups] = useState<Conv[]>([]);
+  const [selected, setSelected] = useState<{ kind: "lobby" | "group"; id: string } | null>(null);
+  const [messages, setMessages] = useState<GenericMsg[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, Profile>>({});
+  const [text, setText] = useState("");
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const [recording, setRecording] = useState(false);
+  const [recElapsed, setRecElapsed] = useState(0);
+  const recRef = useRef<MediaRecorder | null>(null);
+  const recChunksRef = useRef<Blob[]>([]);
+  const recTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recStartRef = useRef<number>(0);
+
+  const startRec = async () => {
+    if (!selected || !user) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const rec = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "" });
+      recChunksRef.current = [];
+      rec.ondataavailable = (e) => { if (e.data.size > 0) recChunksRef.current.push(e.data); };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(recChunksRef.current, { type: rec.mimeType || "audio/webm" });
+        const duration = Date.now() - recStartRef.current;
+        const path = `${user.id}/voice-${Date.now()}.webm`;
+        const { error } = await supabase.storage.from("chat-media").upload(path, blob, { contentType: blob.type });
+        if (error) { toast.error(error.message); return; }
+        const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 60);
+        if (selected.kind === "lobby") {
+          await supabase.from("lobby_messages").insert({ lobby_id: selected.id, sender_id: user.id, kind: "voice", media_url: signed?.signedUrl ?? path });
+        } else {
+          await supabase.from("messages").insert({ conversation_id: selected.id, sender_id: user.id, kind: "voice", media_url: signed?.signedUrl ?? path, duration_ms: duration });
+        }
+      };
+      recStartRef.current = Date.now();
+      rec.start();
+      recRef.current = rec;
+      setRecording(true);
+      setRecElapsed(0);
+      recTimerRef.current = setInterval(() => setRecElapsed(Date.now() - recStartRef.current), 200);
+    } catch {
+      toast.error("Mic permission denied");
+    }
+  };
+  const stopRec = () => {
+    recRef.current?.stop();
+    if (recTimerRef.current) clearInterval(recTimerRef.current);
+    setRecording(false);
+  };
+
+  useEffect(() => {
+    supabase.from("lobbies").select("*").order("name").then(({ data }) => setLobbies((data as Lobby[]) ?? []));
+  }, []);
+  const loadGroups = async () => {
+    if (!user) return;
+    const { data: parts } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", user.id);
+    const ids = (parts ?? []).map((p: any) => p.conversation_id);
+    if (!ids.length) { setGroups([]); return; }
+    const { data: cs } = await supabase.from("conversations").select("*").in("id", ids).eq("kind", "group");
+    setGroups((cs as Conv[]) ?? []);
+  };
+  useEffect(() => { loadGroups(); }, [user]);
+
+  useEffect(() => {
+    if (!selected) return;
+    const table = selected.kind === "lobby" ? "lobby_messages" : "messages";
+    const col = selected.kind === "lobby" ? "lobby_id" : "conversation_id";
+    (supabase.from(table) as any).select("*").eq(col, selected.id).order("created_at").limit(200).then(async ({ data }: any) => {
+      const msgs = (data as GenericMsg[]) ?? [];
+      setMessages(msgs);
+      const sids = Array.from(new Set(msgs.map((m) => m.sender_id)));
+      if (sids.length) {
+        const { data: p } = await supabase.from("profiles").select("id, username, display_name").in("id", sids);
+        const m: Record<string, Profile> = {};
+        (p as Profile[] | null)?.forEach((x) => { m[x.id] = x; });
+        setProfiles((cur) => ({ ...cur, ...m }));
+      }
+    });
+    const ch = supabase.channel(`${selected.kind}-${selected.id}`).on("postgres_changes", { event: "INSERT", schema: "public", table, filter: `${col}=eq.${selected.id}` }, async (payload) => {
+      const m = payload.new as GenericMsg;
+      setMessages((ms) => [...ms, m]);
+      if (!profiles[m.sender_id]) {
+        const { data: p } = await supabase.from("profiles").select("id, username, display_name").eq("id", m.sender_id).maybeSingle();
+        if (p) setProfiles((cur) => ({ ...cur, [m.sender_id]: p as Profile }));
+      }
+    }).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selected]);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  const send = async () => {
+    if (!text.trim() || !selected || !user) return;
+    const content = text;
+    setText("");
+    if (selected.kind === "lobby") {
+      await supabase.from("lobby_messages").insert({ lobby_id: selected.id, sender_id: user.id, content, kind: "text" });
+    } else {
+      await supabase.from("messages").insert({ conversation_id: selected.id, sender_id: user.id, content, kind: "text" });
+    }
+  };
+
+  const onUpload = async (file: File) => {
+    if (!user || !selected) return;
+    const path = `${user.id}/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("chat-media").upload(path, file);
+    if (error) { toast.error(error.message); return; }
+    const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 30);
+    if (selected.kind === "lobby") {
+      await supabase.from("lobby_messages").insert({ lobby_id: selected.id, sender_id: user.id, kind: "image", media_url: signed?.signedUrl });
+    } else {
+      await supabase.from("messages").insert({ conversation_id: selected.id, sender_id: user.id, kind: "image", media_url: signed?.signedUrl });
+    }
+  };
+
+  const createGroup = async () => {
+    if (!user || !newName.trim()) return;
+    const { data, error } = await supabase.from("conversations").insert({ kind: "group", name: newName, owner_id: user.id }).select().single();
+    if (error || !data) { toast.error(error?.message ?? "Failed"); return; }
+    await supabase.from("conversation_participants").insert({ conversation_id: data.id, user_id: user.id });
+    setNewName(""); setCreating(false);
+    await loadGroups();
+    setSelected({ kind: "group", id: data.id });
+  };
+
+  return (
+    <div className="flex h-[calc(100vh-3.5rem)] gap-4 p-4">
+      <aside className="w-72 shrink-0 bg-card-gradient border border-border/60 rounded-3xl shadow-soft p-4 overflow-y-auto">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">Public lobbies</h2>
+        <ul className="space-y-1">
+          {lobbies.map((l) => (
+            <li key={l.id}>
+              <button onClick={() => setSelected({ kind: "lobby", id: l.id })} className={`w-full text-left flex items-center gap-2.5 p-2.5 rounded-2xl transition-soft ${selected?.id === l.id ? "bg-primary/10 text-primary" : "hover:bg-muted/60"}`}>
+                <Hash className="size-4 opacity-70" />
+                <span className="text-sm font-medium">{l.name}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-6 flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Your groups</h2>
+          <button onClick={() => setCreating((s) => !s)} className="size-7 rounded-xl bg-muted hover:bg-muted/80 grid place-items-center transition-soft"><Plus className="size-4" /></button>
+        </div>
+        {creating && (
+          <div className="mb-3 flex gap-2">
+            <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Group name" className="flex-1 h-9 px-3 rounded-xl bg-input/60 border border-border text-sm focus:outline-none" />
+            <button onClick={createGroup} className="h-9 px-3 rounded-xl bg-primary-gradient text-primary-foreground text-xs font-medium">Create</button>
+          </div>
+        )}
+        <ul className="space-y-1">
+          {groups.map((g) => (
+            <li key={g.id}>
+              <button onClick={() => setSelected({ kind: "group", id: g.id })} className={`w-full text-left flex items-center gap-2.5 p-2.5 rounded-2xl transition-soft ${selected?.id === g.id ? "bg-primary/10 text-primary" : "hover:bg-muted/60"}`}>
+                <div className="size-7 rounded-xl bg-primary/10 text-primary grid place-items-center text-xs font-semibold">{g.name?.[0]?.toUpperCase() ?? "G"}</div>
+                <span className="text-sm font-medium truncate">{g.name}</span>
+              </button>
+            </li>
+          ))}
+          {groups.length === 0 && !creating && <p className="text-xs text-muted-foreground px-2">No groups yet.</p>}
+        </ul>
+      </aside>
+
+      <section className="flex-1 bg-card-gradient border border-border/60 rounded-3xl shadow-soft flex flex-col overflow-hidden">
+        {!selected ? (
+          <div className="flex-1 grid place-items-center p-8 text-center">
+            <div>
+              <h3 className="text-xl font-semibold tracking-tight">Pick a lobby or group</h3>
+              <p className="mt-2 text-sm text-muted-foreground">Lobbies are public. Messages quietly fade after 60 hours.</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              {messages.map((m) => {
+                const mine = m.sender_id === user?.id;
+                const p = profiles[m.sender_id];
+                return (
+                  <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-md ${mine ? "" : ""}`}>
+                      {!mine && <div className="text-xs text-muted-foreground mb-1 px-1">{p?.display_name ?? "…"}</div>}
+                      <div className={`rounded-2xl px-4 py-2.5 text-sm shadow-soft ${mine ? "bg-primary-gradient text-primary-foreground" : "bg-muted"}`}>
+                        {m.kind === "image" && m.media_url && <img src={m.media_url} className="rounded-xl mb-2 max-w-xs" alt="" />}
+                        {m.kind === "voice" && m.media_url && <VoicePlayer url={m.media_url} mine={mine} />}
+                        {m.content && <div className="whitespace-pre-wrap break-words">{m.content}</div>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={bottomRef} />
+            </div>
+            <div className="border-t border-border/60 p-4 relative">
+              {showEmoji && (
+                <div className="absolute bottom-20 left-4 z-10 shadow-elevated rounded-2xl overflow-hidden">
+                  <EmojiPicker theme={Theme.AUTO} onEmojiClick={(e) => { setText((t) => t + e.emoji); setShowEmoji(false); }} />
+                </div>
+              )}
+              {recording ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-11 px-4 rounded-2xl bg-destructive/10 text-destructive flex items-center gap-2 text-sm">
+                    <span className="size-2 rounded-full bg-destructive animate-pulse-dot" />
+                    Recording… {(recElapsed / 1000).toFixed(1)}s
+                  </div>
+                  <button onClick={stopRec} className="size-11 rounded-2xl bg-destructive text-destructive-foreground grid place-items-center tap"><Square className="size-4" /></button>
+                </div>
+              ) : (
+                <div className="flex items-end gap-2">
+                  <button onClick={() => setShowEmoji((s) => !s)} className="size-11 rounded-2xl bg-muted hover:bg-muted/80 grid place-items-center transition-soft"><Smile className="size-5" /></button>
+                  <label className="size-11 rounded-2xl bg-muted hover:bg-muted/80 grid place-items-center transition-soft cursor-pointer">
+                    <ImageIcon className="size-5" />
+                    <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])} />
+                  </label>
+                  <button onClick={startRec} className="size-11 rounded-2xl bg-muted hover:bg-muted/80 grid place-items-center transition-soft tap" aria-label="Record voice"><Mic className="size-5" /></button>
+                  <textarea value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }} placeholder="Message…" rows={1} className="flex-1 resize-none px-4 py-2.5 rounded-2xl bg-input/60 border border-border focus:outline-none focus:ring-2 focus:ring-ring/40 text-sm max-h-32" />
+                  <button onClick={send} className="size-11 rounded-2xl bg-primary-gradient text-primary-foreground grid place-items-center shadow-glow hover:opacity-90 transition-soft"><Send className="size-5" /></button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function VoicePlayer({ url, mine }: { url: string; mine: boolean }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const toggle = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    if (playing) { a.pause(); setPlaying(false); }
+    else { a.play().then(() => setPlaying(true)).catch(() => setPlaying(false)); }
+  };
+  return (
+    <div className="flex items-center gap-2 min-w-[180px]">
+      <button onClick={toggle} className={`size-8 rounded-full grid place-items-center ${mine ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/15 text-primary"}`}>
+        {playing ? <Pause className="size-4" /> : <Play className="size-4 ml-0.5" />}
+      </button>
+      <div className={`flex-1 h-1 rounded-full ${mine ? "bg-primary-foreground/30" : "bg-foreground/20"}`}>
+        <div className={`h-1 rounded-full ${mine ? "bg-primary-foreground" : "bg-primary"}`} style={{ width: playing ? "100%" : "0%", transition: "width 0.2s linear" }} />
+      </div>
+      <audio ref={audioRef} src={url} onEnded={() => setPlaying(false)} preload="metadata" />
+    </div>
+  );
+}
