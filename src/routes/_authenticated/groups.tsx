@@ -119,11 +119,23 @@ function GroupsPage() {
     if (!text.trim() || !selected || !user) return;
     const content = text;
     setText("");
-    if (selected.kind === "lobby") {
-      await supabase.from("lobby_messages").insert({ lobby_id: selected.id, sender_id: user.id, content, kind: "text" });
-    } else {
-      await supabase.from("messages").insert({ conversation_id: selected.id, sender_id: user.id, content, kind: "text" });
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: GenericMsg = { id: tempId, sender_id: user.id, content, media_url: null, kind: "text", created_at: new Date().toISOString() };
+    setMessages((ms) => [...ms, optimistic]);
+    const table = selected.kind === "lobby" ? "lobby_messages" : "messages";
+    const payload: any = selected.kind === "lobby"
+      ? { lobby_id: selected.id, sender_id: user.id, content, kind: "text" }
+      : { conversation_id: selected.id, sender_id: user.id, content, kind: "text" };
+    const { data, error } = await (supabase.from(table) as any).insert(payload).select().single();
+    if (error) {
+      setMessages((ms) => ms.filter((x) => x.id !== tempId));
+      toast.error(error.message);
+      return;
     }
+    setMessages((ms) => {
+      const without = ms.filter((x) => x.id !== tempId);
+      return without.some((x) => x.id === data.id) ? without : [...without, data as GenericMsg];
+    });
   };
 
   const onUpload = async (file: File) => {
