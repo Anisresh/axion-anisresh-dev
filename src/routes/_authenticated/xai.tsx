@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { xaiChat } from "@/lib/xai.functions";
 import { Send, Sparkles, Plus, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/xai")({
