@@ -31,9 +31,33 @@ function LearningPage() {
   useEffect(() => { load(); }, [user]);
 
   const onFile = async (file: File) => {
-    const text = await file.text();
-    setSource(text);
-    if (!title) setTitle(file.name.replace(/\.[^.]+$/, ""));
+    try {
+      if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) {
+        toast.info("Extracting PDF text…");
+        // @ts-ignore - no types for worker subpath
+        const pdfjs: any = await import(/* @vite-ignore */ "pdfjs-dist/build/pdf.mjs");
+        // @ts-ignore - worker URL
+        const workerUrl = (await import("pdfjs-dist/build/pdf.worker.mjs?url")).default;
+        pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+        const buf = await file.arrayBuffer();
+        const doc = await pdfjs.getDocument({ data: buf }).promise;
+        let out = "";
+        const maxPages = Math.min(doc.numPages, 50);
+        for (let i = 1; i <= maxPages; i++) {
+          const page = await doc.getPage(i);
+          const tc = await page.getTextContent();
+          out += tc.items.map((it: any) => it.str).join(" ") + "\n\n";
+        }
+        setSource(out.trim());
+      } else {
+        const text = await file.text();
+        setSource(text);
+      }
+      if (!title) setTitle(file.name.replace(/\.[^.]+$/, ""));
+      toast.success("File loaded");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't read file");
+    }
   };
 
   const onGenerate = async () => {
@@ -63,8 +87,8 @@ function LearningPage() {
           <textarea value={source} onChange={(e) => setSource(e.target.value)} placeholder="Paste notes, an article, or chapter content here…" className="mt-3 w-full min-h-[280px] p-4 rounded-2xl bg-input/60 border border-border focus:outline-none focus:ring-2 focus:ring-ring/40 text-sm resize-y" />
           <div className="mt-4 flex items-center gap-2">
             <label className="h-11 px-4 rounded-2xl bg-muted hover:bg-muted/80 transition-soft inline-flex items-center gap-2 cursor-pointer text-sm font-medium">
-              <Upload className="size-4" /> Upload .txt
-              <input type="file" accept=".txt,.md,text/plain" hidden onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
+              <Upload className="size-4" /> Upload PDF, .txt, .md
+              <input type="file" accept=".txt,.md,.pdf,text/plain,application/pdf" hidden onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
             </label>
             <button onClick={onGenerate} disabled={loading} className="ml-auto h-11 px-5 rounded-2xl bg-primary-gradient text-primary-foreground text-sm font-medium shadow-glow inline-flex items-center gap-2 hover:opacity-90 transition-soft disabled:opacity-60">
               {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />} Generate study set
