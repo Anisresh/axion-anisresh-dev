@@ -347,17 +347,19 @@ function MessagesPage() {
               <div className="px-5 py-3 border-b border-border/60 flex items-center gap-3">
                 <div className="relative">
                   <div className="size-9 rounded-full bg-primary/15 text-primary grid place-items-center text-xs font-semibold overflow-hidden">
-                    {otherProfile.avatar_url ? <img src={otherProfile.avatar_url} className="size-full object-cover" alt="" /> : otherProfile.display_name[0]?.toUpperCase()}
+                    {otherProfile.avatar_url ? <img src={otherProfile.avatar_url} className="size-full object-cover" alt="" /> : getInitial(otherProfile.display_name || otherProfile.username)}
                   </div>
                   <span className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full ring-2 ring-card ${PRESENCE_DOT[otherStatus]}`} />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold">{otherProfile.display_name}</div>
-                  <div className="text-[11px] text-muted-foreground capitalize">{otherStatus} · @{otherProfile.username}</div>
+                  <div className="text-sm font-semibold">{otherProfile.display_name || otherProfile.username || "Unknown"}</div>
+                  <div className="text-[11px] text-muted-foreground capitalize">{otherStatus} · @{otherProfile.username || "unknown"}</div>
                 </div>
               </div>
             )}
             <div className="flex-1 overflow-y-auto p-6 space-y-2">
+              {loadingActive && <div className="text-sm text-muted-foreground">Loading conversation…</div>}
+              {!loadingActive && active && !otherProfile && <div className="text-sm text-muted-foreground">This conversation is unavailable right now.</div>}
               <AnimatePresence initial={false}>
                 {messages.map((m) => {
                   const mine = m.sender_id === user?.id;
