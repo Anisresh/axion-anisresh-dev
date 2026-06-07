@@ -177,8 +177,8 @@ function GroupsPage() {
         <ul className="space-y-1">
           {groups.map((g) => (
             <li key={g.id}>
-              <button onClick={() => setSelected({ kind: "group", id: g.id })} className={`w-full text-left flex items-center gap-2.5 p-2.5 rounded-2xl transition-soft ${selected?.id === g.id ? "bg-primary/10 text-primary" : "hover:bg-muted/60"}`}>
-                <div className="size-7 rounded-xl bg-primary/10 text-primary grid place-items-center text-xs font-semibold">{g.name?.[0]?.toUpperCase() ?? "G"}</div>
+              <button onClick={() => setSelected({ kind: "group", id: g.id })} className={`w-full text-left flex items-center gap-2.5 p-2.5 rounded-2xl transition-soft ${selected?.id === g.id ? "bg-primary text-primary-foreground shadow-glow" : "hover:bg-muted/60 text-foreground"}`}>
+                <div className={`size-7 rounded-xl grid place-items-center text-xs font-semibold ${selected?.id === g.id ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/15 text-primary"}`}>{g.name?.[0]?.toUpperCase() ?? "G"}</div>
                 <span className="text-sm font-medium truncate">{g.name}</span>
               </button>
             </li>
