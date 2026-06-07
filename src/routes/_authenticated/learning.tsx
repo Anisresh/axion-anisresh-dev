@@ -34,7 +34,8 @@ function LearningPage() {
     try {
       if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) {
         toast.info("Extracting PDF text…");
-        const pdfjs: any = await import("pdfjs-dist/build/pdf.mjs");
+        // @ts-ignore - no types for worker subpath
+        const pdfjs: any = await import(/* @vite-ignore */ "pdfjs-dist/build/pdf.mjs");
         // @ts-ignore - worker URL
         const workerUrl = (await import("pdfjs-dist/build/pdf.worker.mjs?url")).default;
         pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
