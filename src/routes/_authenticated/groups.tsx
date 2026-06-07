@@ -104,7 +104,7 @@ function GroupsPage() {
     });
     const ch = supabase.channel(`${selected.kind}-${selected.id}`).on("postgres_changes", { event: "INSERT", schema: "public", table, filter: `${col}=eq.${selected.id}` }, async (payload) => {
       const m = payload.new as GenericMsg;
-      setMessages((ms) => [...ms, m]);
+      setMessages((ms) => ms.some((x) => x.id === m.id) ? ms : [...ms.filter((x) => !x.id.startsWith("temp-") || x.content !== m.content || x.sender_id !== m.sender_id), m]);
       if (!profiles[m.sender_id]) {
         const { data: p } = await supabase.from("profiles").select("id, username, display_name").eq("id", m.sender_id).maybeSingle();
         if (p) setProfiles((cur) => ({ ...cur, [m.sender_id]: p as Profile }));
