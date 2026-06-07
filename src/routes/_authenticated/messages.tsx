@@ -72,7 +72,8 @@ function MessagesPage() {
 
     const ch = supabase.channel(`conv-${active}`, { config: { broadcast: { self: false } } })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${active}` }, (payload) => {
-        setMessages((m) => [...m, payload.new as Msg]);
+        const m = payload.new as Msg;
+        setMessages((prev) => prev.some((x) => x.id === m.id) ? prev : [...prev, m]);
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "message_reads" }, (payload) => {
         const r = payload.new as any;
@@ -128,7 +129,14 @@ function MessagesPage() {
     if (!text.trim() || !active || !user) return;
     const content = text;
     setText("");
-    await supabase.from("messages").insert({ conversation_id: active, sender_id: user.id, kind: "text", content });
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({ conversation_id: active, sender_id: user.id, kind: "text", content })
+      .select()
+      .single();
+    if (error) { toast.error(error.message); setText(content); return; }
+    const m = data as Msg;
+    setMessages((prev) => prev.some((x) => x.id === m.id) ? prev : [...prev, m]);
   };
 
   const broadcastTyping = () => {
@@ -142,7 +150,8 @@ function MessagesPage() {
     const { error } = await supabase.storage.from("chat-media").upload(path, file);
     if (error) { toast.error(error.message); return; }
     const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 60);
-    await supabase.from("messages").insert({ conversation_id: active, sender_id: user.id, kind: "image", media_url: signed?.signedUrl ?? path });
+    const { data: inserted } = await supabase.from("messages").insert({ conversation_id: active, sender_id: user.id, kind: "image", media_url: signed?.signedUrl ?? path }).select().single();
+    if (inserted) { const m = inserted as Msg; setMessages((prev) => prev.some((x) => x.id === m.id) ? prev : [...prev, m]); }
   };
 
   // --- Voice recording ---
@@ -168,7 +177,8 @@ function MessagesPage() {
         const { error } = await supabase.storage.from("chat-media").upload(path, blob, { contentType: blob.type });
         if (error) { toast.error(error.message); return; }
         const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 60);
-        await supabase.from("messages").insert({ conversation_id: active, sender_id: user.id, kind: "voice", media_url: signed?.signedUrl ?? path, duration_ms: duration });
+        const { data: inserted } = await supabase.from("messages").insert({ conversation_id: active, sender_id: user.id, kind: "voice", media_url: signed?.signedUrl ?? path, duration_ms: duration }).select().single();
+        if (inserted) { const m = inserted as Msg; setMessages((prev) => prev.some((x) => x.id === m.id) ? prev : [...prev, m]); }
       };
       recStartRef.current = Date.now();
       rec.start();

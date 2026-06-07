@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
-import { Play, Pause, RotateCcw, Plus, Trash2, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause, RotateCcw, Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/_authenticated/focus")({
@@ -11,17 +11,6 @@ export const Route = createFileRoute("/_authenticated/focus")({
 });
 
 type Mode = "pomodoro" | "stopwatch" | "countdown";
-
-const ambient = [
-  { id: "rain", label: "Rain", url: "https://cdn.pixabay.com/audio/2022/03/15/audio_2bf85a4d11.mp3" },
-  { id: "forest", label: "Forest", url: "https://cdn.pixabay.com/audio/2022/02/22/audio_e7b39b73ad.mp3" },
-  { id: "ocean", label: "Ocean", url: "https://cdn.pixabay.com/audio/2023/06/19/audio_f6d6d36f72.mp3" },
-  { id: "cafe", label: "Café", url: "https://cdn.pixabay.com/audio/2022/03/24/audio_0625c1539c.mp3" },
-  { id: "fire", label: "Fireplace", url: "https://cdn.pixabay.com/audio/2022/10/14/audio_5d3a1c5a40.mp3" },
-  { id: "piano", label: "Soft Piano", url: "https://cdn.pixabay.com/audio/2023/03/22/audio_4cb83c5b8b.mp3" },
-  { id: "lofi", label: "Lo-fi", url: "https://cdn.pixabay.com/audio/2024/02/01/audio_6f2c1cad8d.mp3" },
-  { id: "night", label: "Night", url: "https://cdn.pixabay.com/audio/2022/03/10/audio_4eb1c1a30f.mp3" },
-];
 
 function FocusPage() {
   const { user } = useAuth();
@@ -35,9 +24,6 @@ function FocusPage() {
   const [streak, setStreak] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Audio refs and volumes
-  const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
-  const [volumes, setVolumes] = useState<Record<string, number>>(() => Object.fromEntries(ambient.map((a) => [a.id, 0])));
 
   useEffect(() => {
     if (running) {
@@ -80,15 +66,6 @@ function FocusPage() {
 
   const addTask = () => { if (!taskInput.trim()) return; setTasks((t) => [...t, { id: crypto.randomUUID(), text: taskInput, done: false }]); setTaskInput(""); };
 
-  const setVolume = (id: string, v: number) => {
-    setVolumes((vs) => ({ ...vs, [id]: v }));
-    const a = audioRefs.current[id];
-    if (a) {
-      a.volume = v;
-      if (v > 0 && a.paused) { a.loop = true; a.play().catch(() => {}); }
-      if (v === 0 && !a.paused) a.pause();
-    }
-  };
 
   const m = Math.floor(seconds / 60), s = seconds % 60;
   const progress = target > 0 ? Math.min(1, (target - seconds) / target) : (mode === "stopwatch" ? 1 : 0);
@@ -96,7 +73,7 @@ function FocusPage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl mx-auto">
       <h1 className="text-4xl font-semibold tracking-tight">Focus</h1>
-      <p className="mt-2 text-muted-foreground">Quiet timers, ambient sounds, and a clean checklist.</p>
+      <p className="mt-2 text-muted-foreground">Quiet timers and a clean checklist.</p>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 bg-card-gradient border border-border/60 rounded-3xl p-8 shadow-soft text-center">
@@ -157,19 +134,6 @@ function FocusPage() {
             </ul>
           </div>
 
-          <div className="bg-card-gradient border border-border/60 rounded-3xl p-5 shadow-soft">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Ambient sounds</h3>
-            <div className="mt-3 space-y-2.5">
-              {ambient.map((a) => (
-                <div key={a.id} className="flex items-center gap-2">
-                  <audio ref={(el) => { audioRefs.current[a.id] = el; }} src={a.url} preload="none" />
-                  {volumes[a.id] > 0 ? <Volume2 className="size-4 text-primary" /> : <VolumeX className="size-4 text-muted-foreground" />}
-                  <span className="text-sm w-20">{a.label}</span>
-                  <input type="range" min={0} max={1} step={0.05} value={volumes[a.id]} onChange={(e) => setVolume(a.id, Number(e.target.value))} className="flex-1 accent-[oklch(0.62_0.14_285)]" />
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>

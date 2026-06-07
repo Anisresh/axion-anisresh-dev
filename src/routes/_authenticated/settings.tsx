@@ -23,8 +23,27 @@ function SettingsPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle().then(({ data }) => setProfile(data as Profile));
-    supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle().then(({ data }) => setSettings(data as Settings));
+    (async () => {
+      // Profile: load, and self-heal if missing (older accounts created before the signup trigger was attached)
+      let { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+      if (!prof) {
+        const fallback = (user.email ?? "friend").split("@")[0].replace(/[^a-z0-9_]/gi, "").toLowerCase() || "user";
+        const username = `${fallback}${user.id.slice(0, 4)}`;
+        await supabase.from("profiles").insert({ id: user.id, username, display_name: fallback });
+        const r = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+        prof = r.data;
+      }
+      setProfile(prof as Profile);
+
+      // Settings: load, and self-heal if missing
+      let { data: s } = await supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle();
+      if (!s) {
+        await supabase.from("user_settings").insert({ user_id: user.id });
+        const r = await supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle();
+        s = r.data;
+      }
+      setSettings(s as Settings);
+    })();
   }, [user]);
 
   useEffect(() => {
