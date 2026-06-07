@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
-import { Play, Pause, RotateCcw, Plus, Trash2, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause, RotateCcw, Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/_authenticated/focus")({
@@ -11,17 +11,6 @@ export const Route = createFileRoute("/_authenticated/focus")({
 });
 
 type Mode = "pomodoro" | "stopwatch" | "countdown";
-
-const ambient = [
-  { id: "rain", label: "Rain", url: "https://cdn.pixabay.com/audio/2022/03/15/audio_2bf85a4d11.mp3" },
-  { id: "forest", label: "Forest", url: "https://cdn.pixabay.com/audio/2022/02/22/audio_e7b39b73ad.mp3" },
-  { id: "ocean", label: "Ocean", url: "https://cdn.pixabay.com/audio/2023/06/19/audio_f6d6d36f72.mp3" },
-  { id: "cafe", label: "Café", url: "https://cdn.pixabay.com/audio/2022/03/24/audio_0625c1539c.mp3" },
-  { id: "fire", label: "Fireplace", url: "https://cdn.pixabay.com/audio/2022/10/14/audio_5d3a1c5a40.mp3" },
-  { id: "piano", label: "Soft Piano", url: "https://cdn.pixabay.com/audio/2023/03/22/audio_4cb83c5b8b.mp3" },
-  { id: "lofi", label: "Lo-fi", url: "https://cdn.pixabay.com/audio/2024/02/01/audio_6f2c1cad8d.mp3" },
-  { id: "night", label: "Night", url: "https://cdn.pixabay.com/audio/2022/03/10/audio_4eb1c1a30f.mp3" },
-];
 
 function FocusPage() {
   const { user } = useAuth();
