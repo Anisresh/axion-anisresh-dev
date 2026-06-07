@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MiniSidebar } from "@/components/MiniSidebar";
 import { Footer } from "@/components/Footer";
 import { LofiPlayer } from "@/components/LofiPlayer";
+import { TopBar } from "@/components/TopBar";
 import { usePaletteSync } from "@/lib/usePalette";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -20,8 +21,9 @@ function AuthLayout() {
   return (
     <div className="min-h-screen flex bg-background">
       <MiniSidebar />
+      <TopBar />
       <div className="flex-1 ml-[92px] flex flex-col min-h-screen">
-        <main className="flex-1">
+        <main className="flex-1 pt-16">
           <Outlet />
         </main>
         <Footer />
