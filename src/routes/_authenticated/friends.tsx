@@ -106,8 +106,8 @@ function FriendsPage() {
       <Section title="Sent requests" empty="No outgoing requests">
         {outgoing.map((f) => { const p = other(f); if (!p) return null; return (
           <Row key={f.id} p={p}>
-            <span className="text-xs text-muted-foreground">Pending</span>
-            <button onClick={() => remove(f.id)} className="h-9 px-3 rounded-xl bg-muted text-muted-foreground text-sm font-medium hover:bg-destructive/10 hover:text-destructive transition-soft">Cancel</button>
+            <span className="h-9 px-3 inline-flex items-center rounded-xl border border-border bg-muted/50 text-foreground text-xs font-medium">Pending</span>
+            <button onClick={() => remove(f.id)} className="h-9 px-3 rounded-xl border border-border bg-muted text-foreground text-sm font-medium hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-soft inline-flex items-center gap-1.5"><X className="size-4" /> Cancel</button>
           </Row>
         ); })}
       </Section>

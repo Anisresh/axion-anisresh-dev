@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { learningGenerate } from "@/lib/xai.functions";
-import { Upload, Loader2, BookOpen, Sparkles } from "lucide-react";
+import { Upload, Loader2, BookOpen, Sparkles, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/learning")({
@@ -95,7 +95,7 @@ function LearningPage() {
             {active.output.key_concepts && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {active.output.key_concepts.map((k: string) => (
-                  <span key={k} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">{k}</span>
+                  <span key={k} className="px-3 py-1 rounded-full border border-primary/40 bg-primary/15 text-foreground text-xs font-medium">{k}</span>
                 ))}
               </div>
             )}
@@ -163,8 +163,12 @@ function Mcq({ q }: { q: { q: string; options: string[]; answer_index: number } 
           const isCorrect = picked !== null && i === q.answer_index;
           const isWrong = picked === i && i !== q.answer_index;
           return (
-            <button key={i} onClick={() => setPicked(i)} className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-soft border ${isCorrect ? "border-primary bg-primary/10 text-primary" : isWrong ? "border-destructive bg-destructive/10 text-destructive" : "border-border bg-muted/40 hover:bg-muted"}`}>
-              {opt}
+            <button key={i} onClick={() => setPicked(i)} className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-soft border ${isCorrect ? "border-primary bg-primary text-primary-foreground" : isWrong ? "border-destructive bg-destructive text-destructive-foreground" : "border-border bg-muted/40 text-foreground hover:bg-muted"}`}>
+              <span className="inline-flex items-center gap-2">
+                {picked !== null && isCorrect && <Check className="size-4" />}
+                {isWrong && <X className="size-4" />}
+                {opt}
+              </span>
             </button>
           );
         })}
