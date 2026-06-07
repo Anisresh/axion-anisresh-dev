@@ -90,23 +90,36 @@ function MessagesPage() {
     if (!active || !user) return;
     setLoadingActive(true);
     setReads({}); setReactions({});
-    supabase.from("messages").select("*").eq("conversation_id", active).order("created_at").then(({ data }) => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from("messages").select("*").eq("conversation_id", active).order("created_at");
+      if (cancelled) return;
       const list = (data as Msg[]) ?? [];
       setMessages(list);
       const ids = list.map((m) => m.id);
       if (ids.length) {
         supabase.from("message_reads").select("message_id, user_id").in("message_id", ids).then(({ data: rr }) => {
+          if (cancelled) return;
           const map: Record<string, string[]> = {};
           (rr ?? []).forEach((r: any) => { (map[r.message_id] ??= []).push(r.user_id); });
           setReads(map);
         });
         supabase.from("message_reactions").select("*").in("message_id", ids).then(({ data: rx }) => {
+          if (cancelled) return;
           const map: Record<string, Reaction[]> = {};
           (rx as Reaction[] | null)?.forEach((r) => { (map[r.message_id] ??= []).push(r); });
           setReactions(map);
         });
       }
-    }).finally(() => setLoadingActive(false));
+      setLoadingActive(false);
+    })().catch(() => {
+      if (!cancelled) {
+        setMessages([]);
+        setReads({});
+        setReactions({});
+        setLoadingActive(false);
+      }
+    });
 
     const ch = supabase.channel(`conv-${active}`, { config: { broadcast: { self: false } } })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${active}` }, (payload) => {
@@ -134,7 +147,7 @@ function MessagesPage() {
       })
       .subscribe();
     channelRef.current = ch;
-    return () => { supabase.removeChannel(ch); channelRef.current = null; };
+    return () => { cancelled = true; supabase.removeChannel(ch); channelRef.current = null; };
   }, [active, user]);
 
   useEffect(() => {
