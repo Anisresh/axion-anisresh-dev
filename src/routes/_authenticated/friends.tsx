@@ -131,7 +131,7 @@ function FriendsPage() {
           ); })}
         </Section>
       )}
-    </div>
+    </motion.div>
   );
 }
 
