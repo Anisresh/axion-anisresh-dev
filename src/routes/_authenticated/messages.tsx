@@ -34,10 +34,13 @@ function MessagesPage() {
   const [reactPickerFor, setReactPickerFor] = useState<string | null>(null);
   const [typingOther, setTypingOther] = useState(false);
   const [reads, setReads] = useState<Record<string, string[]>>({});
+  const [loadingActive, setLoadingActive] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChanRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  const getInitial = (value?: string | null, fallback = "?") => value?.trim()?.[0]?.toUpperCase() ?? fallback;
 
   const loadConvs = async () => {
     if (!user) return;
@@ -85,6 +88,7 @@ function MessagesPage() {
   // Per-conversation messages + reactions + reads + typing
   useEffect(() => {
     if (!active || !user) return;
+    setLoadingActive(true);
     setReads({}); setReactions({});
     supabase.from("messages").select("*").eq("conversation_id", active).order("created_at").then(({ data }) => {
       const list = (data as Msg[]) ?? [];
@@ -102,7 +106,7 @@ function MessagesPage() {
           setReactions(map);
         });
       }
-    });
+    }).finally(() => setLoadingActive(false));
 
     const ch = supabase.channel(`conv-${active}`, { config: { broadcast: { self: false } } })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${active}` }, (payload) => {
@@ -303,10 +307,10 @@ function MessagesPage() {
               <li key={f.id}>
                 <button onClick={() => startDM(f.id)} className="w-full text-left flex items-center gap-3 p-2.5 rounded-2xl hover:bg-muted/60 transition-soft tap">
                   <div className="relative">
-                    <div className="size-9 rounded-full bg-muted grid place-items-center text-xs font-semibold">{f.display_name[0]?.toUpperCase()}</div>
+                    <div className="size-9 rounded-full bg-muted grid place-items-center text-xs font-semibold">{getInitial(f.display_name || f.username)}</div>
                     <span className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full ring-2 ring-card ${PRESENCE_DOT[s]}`} />
                   </div>
-                  <div className="flex-1 min-w-0"><div className="text-sm truncate">{f.display_name}</div></div>
+                  <div className="flex-1 min-w-0"><div className="text-sm truncate">{f.display_name || f.username || "Unknown"}</div></div>
                 </button>
               </li>
             );
