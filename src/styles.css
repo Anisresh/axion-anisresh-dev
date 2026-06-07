@@ -225,6 +225,9 @@
   }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
   button, a { -webkit-tap-highlight-color: transparent; }
+  /* Keep text legible when highlighted (browser default selection hides text on warm-café dark) */
+  ::selection { background-color: color-mix(in oklab, var(--color-primary) 55%, transparent); color: var(--color-primary-foreground); }
+  ::-moz-selection { background-color: color-mix(in oklab, var(--color-primary) 55%, transparent); color: var(--color-primary-foreground); }
 }
 
 @layer utilities {
