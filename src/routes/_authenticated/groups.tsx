@@ -192,18 +192,26 @@ function GroupsPage() {
           <div className="flex-1 grid place-items-center p-8 text-center">
             <div>
               <h3 className="text-xl font-semibold tracking-tight">Pick a lobby or group</h3>
-              <p className="mt-2 text-sm text-muted-foreground">Lobbies are public. Messages quietly fade after 60 hours.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Lobbies are public. Messages quietly fade after 72 hours.</p>
             </div>
           </div>
         ) : (
           <>
+            <ChannelHeader
+              selected={selected}
+              lobbies={lobbies}
+              groups={groups}
+              user={user}
+              onUpdated={async () => { await loadGroups(); }}
+            />
             <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              <AnimatePresence initial={false}>
               {messages.map((m) => {
                 const mine = m.sender_id === user?.id;
                 const p = profiles[m.sender_id];
                 return (
-                  <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-md ${mine ? "" : ""}`}>
+                  <motion.div key={m.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                    <div className="max-w-md">
                       {!mine && <div className="text-xs text-muted-foreground mb-1 px-1">{p?.display_name ?? "…"}</div>}
                       <div className={`rounded-2xl px-4 py-2.5 text-sm shadow-soft ${mine ? "bg-primary-gradient text-primary-foreground" : "bg-muted"}`}>
                         {m.kind === "image" && m.media_url && <img src={m.media_url} className="rounded-xl mb-2 max-w-xs" alt="" />}
@@ -211,9 +219,10 @@ function GroupsPage() {
                         {m.content && <div className="whitespace-pre-wrap break-words">{m.content}</div>}
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
+              </AnimatePresence>
               <div ref={bottomRef} />
             </div>
             <div className="border-t border-border/60 p-4 relative">
@@ -247,6 +256,147 @@ function GroupsPage() {
         )}
       </section>
     </div>
+  );
+}
+
+function ChannelHeader({ selected, lobbies, groups, user, onUpdated }: {
+  selected: { kind: "lobby" | "group"; id: string };
+  lobbies: Lobby[]; groups: Conv[]; user: any; onUpdated: () => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const lobby = selected.kind === "lobby" ? lobbies.find((l) => l.id === selected.id) : null;
+  const group = selected.kind === "group" ? groups.find((g) => g.id === selected.id) : null;
+  const isOwner = group?.owner_id === user?.id;
+  const title = lobby?.name ?? group?.name ?? "";
+  const sub = lobby?.description ?? (group ? "Private group" : "");
+  return (
+    <div className="border-b border-border/60 px-5 py-3 flex items-center gap-3">
+      <div className="size-9 rounded-2xl bg-primary/15 text-primary grid place-items-center overflow-hidden">
+        {group?.icon_url ? <img src={group.icon_url} className="size-full object-cover" alt="" /> : (lobby ? <Hash className="size-4" /> : <span className="text-xs font-semibold">{title[0]?.toUpperCase()}</span>)}
+      </div>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-sm font-semibold truncate">{lobby ? `#${title}` : title}</h3>
+        <p className="text-xs text-muted-foreground truncate">{sub}</p>
+      </div>
+      {group && (
+        <button onClick={() => setOpen(true)} className="h-9 px-3 rounded-xl bg-muted hover:bg-muted/80 inline-flex items-center gap-1.5 text-xs font-medium transition-soft">
+          <Settings2 className="size-4" /> Manage
+        </button>
+      )}
+      <AnimatePresence>
+        {open && group && <GroupManageDialog group={group} isOwner={isOwner} onClose={() => setOpen(false)} onUpdated={onUpdated} />}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function GroupManageDialog({ group, isOwner, onClose, onUpdated }: { group: Conv; isOwner: boolean; onClose: () => void; onUpdated: () => Promise<void> }) {
+  const [name, setName] = useState(group.name ?? "");
+  const [members, setMembers] = useState<Profile[]>([]);
+  const [addQ, setAddQ] = useState("");
+  const [addResults, setAddResults] = useState<Profile[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const loadMembers = async () => {
+    const { data: parts } = await supabase.from("conversation_participants").select("user_id").eq("conversation_id", group.id);
+    const ids = (parts ?? []).map((p: any) => p.user_id);
+    if (!ids.length) { setMembers([]); return; }
+    const { data: profs } = await supabase.from("profiles").select("id, username, display_name").in("id", ids);
+    setMembers((profs as Profile[]) ?? []);
+  };
+  useEffect(() => { loadMembers(); }, [group.id]);
+
+  useEffect(() => {
+    if (!addQ.trim()) { setAddResults([]); return; }
+    const t = setTimeout(async () => {
+      const memberIds = members.map((m) => m.id);
+      const { data } = await supabase.from("profiles").select("id, username, display_name").ilike("username", `%${addQ.trim()}%`).limit(8);
+      setAddResults(((data as Profile[]) ?? []).filter((p) => !memberIds.includes(p.id)));
+    }, 200);
+    return () => clearTimeout(t);
+  }, [addQ, members]);
+
+  const rename = async () => {
+    if (!name.trim()) return;
+    setBusy(true);
+    const { error } = await supabase.from("conversations").update({ name }).eq("id", group.id);
+    setBusy(false);
+    if (error) toast.error(error.message); else { toast.success("Renamed"); await onUpdated(); }
+  };
+  const uploadIcon = async (file: File) => {
+    const path = `${group.id}/icon-${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("chat-media").upload(path, file, { upsert: true });
+    if (error) { toast.error(error.message); return; }
+    const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
+    await supabase.from("conversations").update({ icon_url: signed?.signedUrl }).eq("id", group.id);
+    toast.success("Group icon updated");
+    await onUpdated();
+  };
+  const addMember = async (p: Profile) => {
+    const { error } = await supabase.from("conversation_participants").insert({ conversation_id: group.id, user_id: p.id });
+    if (error) toast.error(error.message); else { setAddQ(""); await loadMembers(); }
+  };
+  const removeMember = async (uid: string) => {
+    const { error } = await supabase.from("conversation_participants").delete().eq("conversation_id", group.id).eq("user_id", uid);
+    if (error) toast.error(error.message); else await loadMembers();
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-background/70 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="w-full max-w-md max-h-[80vh] overflow-y-auto bg-card border border-border/60 rounded-3xl shadow-elevated p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">Manage group</h2>
+          <button onClick={onClose} className="size-8 rounded-xl hover:bg-muted grid place-items-center"><X className="size-4" /></button>
+        </div>
+
+        {isOwner && (
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Name</label>
+            <div className="mt-2 flex gap-2">
+              <input value={name} onChange={(e) => setName(e.target.value)} className="flex-1 h-10 px-3 rounded-xl bg-input/60 border border-border text-sm" />
+              <button onClick={rename} disabled={busy} className="h-10 px-3 rounded-xl bg-primary-gradient text-primary-foreground text-xs font-medium inline-flex items-center gap-1.5 disabled:opacity-60"><Pencil className="size-3.5" /> Save</button>
+            </div>
+            <label className="mt-4 inline-flex items-center gap-2 h-10 px-3 rounded-xl bg-muted hover:bg-muted/80 cursor-pointer text-xs font-medium">
+              <Upload className="size-3.5" /> Upload group icon
+              <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && uploadIcon(e.target.files[0])} />
+            </label>
+          </div>
+        )}
+
+        <div>
+          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Members ({members.length})</label>
+          <ul className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+            {members.map((m) => (
+              <li key={m.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/40">
+                <div className="size-8 rounded-full bg-primary/10 text-primary grid place-items-center text-xs font-semibold">{m.display_name[0]?.toUpperCase()}</div>
+                <div className="min-w-0 flex-1"><div className="text-sm font-medium truncate">{m.display_name}</div><div className="text-[11px] text-muted-foreground truncate">@{m.username}</div></div>
+                {isOwner && m.id !== group.owner_id && (
+                  <button onClick={() => removeMember(m.id)} className="size-8 rounded-lg hover:bg-destructive/10 hover:text-destructive grid place-items-center"><UserMinus className="size-4" /></button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {isOwner && (
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Add member</label>
+            <input value={addQ} onChange={(e) => setAddQ(e.target.value)} placeholder="Search by username…" className="mt-2 w-full h-10 px-3 rounded-xl bg-input/60 border border-border text-sm" />
+            {addResults.length > 0 && (
+              <ul className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                {addResults.map((p) => (
+                  <li key={p.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/40">
+                    <div className="size-8 rounded-full bg-primary/10 text-primary grid place-items-center text-xs font-semibold">{p.display_name[0]?.toUpperCase()}</div>
+                    <div className="min-w-0 flex-1"><div className="text-sm font-medium truncate">{p.display_name}</div><div className="text-[11px] text-muted-foreground truncate">@{p.username}</div></div>
+                    <button onClick={() => addMember(p)} className="h-8 px-3 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 inline-flex items-center gap-1"><UserPlus className="size-3.5" /> Add</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
   );
 }
 
