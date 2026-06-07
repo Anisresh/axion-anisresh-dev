@@ -109,6 +109,6 @@ function XaiPage() {
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 }
