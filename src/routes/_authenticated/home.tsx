@@ -16,7 +16,7 @@ const tiles = [
   { to: "/groups", icon: Users, title: "Groups & lobbies", body: "Public + private spaces" },
   { to: "/xai", icon: Sparkles, title: "XAI", body: "Your AI companion" },
   { to: "/learning", icon: GraduationCap, title: "Learning", body: "Flashcards & quizzes" },
-  { to: "/focus", icon: Timer, title: "Focus", body: "Pomodoro & ambient" },
+  { to: "/focus", icon: Timer, title: "Focus", body: "Pomodoro & timers" },
 ] as const;
 
 function HomePage() {
@@ -52,12 +52,12 @@ function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: i * 0.04 }}
           >
-            <Link to={t.to} className="block group bg-card-gradient border border-border/60 rounded-3xl p-6 shadow-soft hover:shadow-elevated transition-soft">
+            <Link to={t.to} className="block group bg-card-gradient border border-border/60 rounded-3xl p-6 shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-soft">
               <div className="flex items-center justify-between">
-                <div className="size-10 rounded-2xl bg-primary/10 text-primary grid place-items-center">
-                  <t.icon className="size-5" />
+                <div className="size-11 rounded-2xl bg-primary-gradient text-primary-foreground grid place-items-center shadow-glow group-hover:scale-110 transition-transform duration-300">
+                  <t.icon className="size-5" strokeWidth={2.2} />
                 </div>
-                <ArrowRight className="size-4 text-muted-foreground group-hover:translate-x-1 group-hover:text-foreground transition-soft" />
+                <ArrowRight className="size-4 text-muted-foreground group-hover:translate-x-1 group-hover:text-primary transition-soft" />
               </div>
               <h3 className="mt-5 text-lg font-semibold tracking-tight">{t.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{t.body}</p>

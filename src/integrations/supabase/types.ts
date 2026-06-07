@@ -275,6 +275,38 @@ export type Database = {
           },
         ]
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_reads: {
         Row: {
           message_id: string
@@ -426,7 +458,7 @@ export type Database = {
     Enums: {
       conversation_kind: "dm" | "group"
       friendship_status: "pending" | "accepted" | "blocked"
-      message_kind: "text" | "image" | "voice"
+      message_kind: "text" | "image" | "voice" | "file"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -556,7 +588,7 @@ export const Constants = {
     Enums: {
       conversation_kind: ["dm", "group"],
       friendship_status: ["pending", "accepted", "blocked"],
-      message_kind: ["text", "image", "voice"],
+      message_kind: ["text", "image", "voice", "file"],
     },
   },
 } as const
