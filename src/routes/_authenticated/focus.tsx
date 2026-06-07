@@ -66,15 +66,6 @@ function FocusPage() {
 
   const addTask = () => { if (!taskInput.trim()) return; setTasks((t) => [...t, { id: crypto.randomUUID(), text: taskInput, done: false }]); setTaskInput(""); };
 
-  const setVolume = (id: string, v: number) => {
-    setVolumes((vs) => ({ ...vs, [id]: v }));
-    const a = audioRefs.current[id];
-    if (a) {
-      a.volume = v;
-      if (v > 0 && a.paused) { a.loop = true; a.play().catch(() => {}); }
-      if (v === 0 && !a.paused) a.pause();
-    }
-  };
 
   const m = Math.floor(seconds / 60), s = seconds % 60;
   const progress = target > 0 ? Math.min(1, (target - seconds) / target) : (mode === "stopwatch" ? 1 : 0);
@@ -82,7 +73,7 @@ function FocusPage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl mx-auto">
       <h1 className="text-4xl font-semibold tracking-tight">Focus</h1>
-      <p className="mt-2 text-muted-foreground">Quiet timers, ambient sounds, and a clean checklist.</p>
+      <p className="mt-2 text-muted-foreground">Quiet timers and a clean checklist.</p>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 bg-card-gradient border border-border/60 rounded-3xl p-8 shadow-soft text-center">
@@ -143,19 +134,6 @@ function FocusPage() {
             </ul>
           </div>
 
-          <div className="bg-card-gradient border border-border/60 rounded-3xl p-5 shadow-soft">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Ambient sounds</h3>
-            <div className="mt-3 space-y-2.5">
-              {ambient.map((a) => (
-                <div key={a.id} className="flex items-center gap-2">
-                  <audio ref={(el) => { audioRefs.current[a.id] = el; }} src={a.url} preload="none" />
-                  {volumes[a.id] > 0 ? <Volume2 className="size-4 text-primary" /> : <VolumeX className="size-4 text-muted-foreground" />}
-                  <span className="text-sm w-20">{a.label}</span>
-                  <input type="range" min={0} max={1} step={0.05} value={volumes[a.id]} onChange={(e) => setVolume(a.id, Number(e.target.value))} className="flex-1 accent-[oklch(0.62_0.14_285)]" />
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>
