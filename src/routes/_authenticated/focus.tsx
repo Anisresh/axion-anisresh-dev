@@ -24,9 +24,6 @@ function FocusPage() {
   const [streak, setStreak] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Audio refs and volumes
-  const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
-  const [volumes, setVolumes] = useState<Record<string, number>>(() => Object.fromEntries(ambient.map((a) => [a.id, 0])));
 
   useEffect(() => {
     if (running) {
