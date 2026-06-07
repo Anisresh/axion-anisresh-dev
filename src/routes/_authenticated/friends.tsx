@@ -65,8 +65,8 @@ function FriendsPage() {
   const other = (f: Friendship) => f.requester_id === user?.id ? profilesMap[f.addressee_id] : profilesMap[f.requester_id];
 
   return (
-    <div className="p-8 md:p-12 max-w-4xl mx-auto">
-      <h1 className="text-4xl font-semibold tracking-tight">Friends</h1>
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="p-8 md:p-12 max-w-4xl mx-auto">
+      <motion.h1 initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="text-4xl font-semibold tracking-tight">Friends</motion.h1>
       <p className="mt-2 text-muted-foreground">Connect with people. Only friends can DM you.</p>
 
       <div className="mt-8 bg-card-gradient border border-border/60 rounded-3xl p-6 shadow-soft">
