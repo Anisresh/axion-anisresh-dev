@@ -48,15 +48,24 @@ function GroupsPage() {
         stream.getTracks().forEach((t) => t.stop());
         const blob = new Blob(recChunksRef.current, { type: rec.mimeType || "audio/webm" });
         const duration = Date.now() - recStartRef.current;
+        const tempId = `temp-${Date.now()}`;
+        const localUrl = URL.createObjectURL(blob);
+        const optimistic: GenericMsg = { id: tempId, sender_id: user.id, content: null, media_url: localUrl, kind: "voice", created_at: new Date().toISOString() };
+        setMessages((ms) => [...ms, optimistic]);
         const path = `${user.id}/voice-${Date.now()}.webm`;
         const { error } = await supabase.storage.from("chat-media").upload(path, blob, { contentType: blob.type });
-        if (error) { toast.error(error.message); return; }
+        if (error) { setMessages((ms) => ms.filter((x) => x.id !== tempId)); toast.error(error.message); return; }
         const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 60);
-        if (selected.kind === "lobby") {
-          await supabase.from("lobby_messages").insert({ lobby_id: selected.id, sender_id: user.id, kind: "voice", media_url: signed?.signedUrl ?? path });
-        } else {
-          await supabase.from("messages").insert({ conversation_id: selected.id, sender_id: user.id, kind: "voice", media_url: signed?.signedUrl ?? path, duration_ms: duration });
-        }
+        const payload: any = selected.kind === "lobby"
+          ? { lobby_id: selected.id, sender_id: user.id, kind: "voice", media_url: signed?.signedUrl ?? path }
+          : { conversation_id: selected.id, sender_id: user.id, kind: "voice", media_url: signed?.signedUrl ?? path, duration_ms: duration };
+        const table = selected.kind === "lobby" ? "lobby_messages" : "messages";
+        const { data, error: insErr } = await (supabase.from(table) as any).insert(payload).select().single();
+        if (insErr) { setMessages((ms) => ms.filter((x) => x.id !== tempId)); toast.error(insErr.message); return; }
+        setMessages((ms) => {
+          const without = ms.filter((x) => x.id !== tempId);
+          return without.some((x) => x.id === data.id) ? without : [...without, data as GenericMsg];
+        });
       };
       recStartRef.current = Date.now();
       rec.start();
