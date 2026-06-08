@@ -70,6 +70,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "google-site-verification", content: "mYMnUMDu4w1LT8Uy2IRElaoIv27wiDP5wlckUQCBgxA" },
       { title: "Axion6 — Calm, premium communication & learning" },
       { name: "description", content: "Axion6 is a calm, premium platform for messaging, focus, and AI-powered learning Created By Anisresh A R" },
       { name: "author", content: "Anisresh A R" },
