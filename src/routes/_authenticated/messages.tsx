@@ -238,7 +238,8 @@ function MessagesPage() {
         const blob = new Blob(recChunksRef.current, { type: rec.mimeType || "audio/webm" });
         const duration = Date.now() - recStartRef.current;
         const tempId = `temp-${Date.now()}`;
-        const optimistic: Msg = { id: tempId, conversation_id: active, sender_id: user.id, kind: "voice", content: null, media_url: null, duration_ms: duration, created_at: new Date().toISOString() };
+        const localUrl = URL.createObjectURL(blob);
+        const optimistic: Msg = { id: tempId, conversation_id: active, sender_id: user.id, kind: "voice", content: null, media_url: localUrl, duration_ms: duration, created_at: new Date().toISOString() };
         setMessages((prev) => [...prev, optimistic]);
         const path = `${user.id}/voice-${Date.now()}.webm`;
         const { error } = await supabase.storage.from("chat-media").upload(path, blob, { contentType: blob.type });
