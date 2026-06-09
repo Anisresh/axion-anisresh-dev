@@ -410,6 +410,33 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          country: string | null
+          created_at: string
+          id: string
+          message: string
+          name: string | null
+          rating: number
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          name?: string | null
+          rating: number
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          name?: string | null
+          rating?: number
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           accent: string
