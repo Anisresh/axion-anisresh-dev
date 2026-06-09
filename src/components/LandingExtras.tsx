@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, X, Heart, Shield, User, HelpCircle, Map, Send, CheckCircle2 } from "lucide-react";
+import { Star, X, Heart, Shield, User, HelpCircle, Map, Send, CheckCircle2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
