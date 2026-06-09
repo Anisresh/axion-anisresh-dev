@@ -106,6 +106,7 @@ export default function Landing() {
         </div>
       </section>
 
+      <LandingExtras />
       <Footer />
     </div>
   );
