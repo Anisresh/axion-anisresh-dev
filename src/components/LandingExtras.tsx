@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, X, Heart, Shield, User, HelpCircle, Map, Send, CheckCircle2 } from "lucide-react";
+import { Star, X, Heart, Shield, User, HelpCircle, Map, Send, CheckCircle2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -290,6 +290,29 @@ export function LandingExtras() {
           ))}
         </div>
         <p className="mt-4 text-xs text-muted-foreground text-center">More ideas are always in development.</p>
+      </section>
+
+      {/* Trust */}
+      <section className="px-6 md:px-10 pb-24 max-w-3xl mx-auto w-full">
+        <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <div className="inline-flex items-center gap-2 rounded-full glass px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-soft">
+            <Shield className="size-3.5 text-primary" /> Trust
+          </div>
+          <h2 className="mt-4 text-3xl md:text-4xl font-semibold tracking-tight">What you can count on.</h2>
+        </motion.div>
+        <div className="mt-6 grid sm:grid-cols-2 gap-3">
+          {["No spam","No unnecessary tracking","Independent project","Built with transparency","Continuously improving"].map((t, i) => (
+            <motion.div key={t}
+              initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+              transition={{ duration: 0.35, delay: i * 0.04 }}
+              className="flex items-center gap-3 bg-card-gradient border border-border/60 rounded-2xl p-4 shadow-soft">
+              <span className="size-7 grid place-items-center rounded-xl bg-primary/15 text-primary">
+                <Check className="size-4" />
+              </span>
+              <span className="text-sm font-medium">{t}</span>
+            </motion.div>
+          ))}
+        </div>
       </section>
 
       {/* Heart Footer */}
