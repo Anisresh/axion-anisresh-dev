@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Sparkles, MessageCircle, GraduationCap, Timer, Shield, ArrowRight } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { LandingExtras } from "@/components/LandingExtras";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -105,6 +106,7 @@ export default function Landing() {
         </div>
       </section>
 
+      <LandingExtras />
       <Footer />
     </div>
   );
