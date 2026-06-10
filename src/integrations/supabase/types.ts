@@ -479,7 +479,6 @@ export type Database = {
     }
     Functions: {
       are_friends: { Args: { a: string; b: string }; Returns: boolean }
-      is_participant: { Args: { c: string; u: string }; Returns: boolean }
       purge_expired_messages: { Args: never; Returns: undefined }
     }
     Enums: {
