@@ -4,14 +4,14 @@ import { z } from "zod";
 
 const SYSTEM_PROMPT = "You are XAI, the calm and thoughtful AI companion of Axion6 — a premium messaging, focus, and learning app. Be warm, concise, and helpful. Use markdown when useful. Decline harmful requests politely.";
 
-async function callGateway(messages: { role: string; content: string }[], system = SYSTEM_PROMPT) {
+async function callGateway(messages: { role: string; content: string }[], system = SYSTEM_PROMPT, model = "google/gemini-3-flash-preview") {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("AI gateway not configured");
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
     body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
+      model,
       messages: [{ role: "system", content: system }, ...messages],
     }),
   });
