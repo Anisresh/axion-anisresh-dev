@@ -26,8 +26,8 @@ async function callGateway(messages: { role: string; content: string }[], system
 
 export const xaiChat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { conversationId: string | null; userMessage: string }) =>
-    z.object({ conversationId: z.string().uuid().nullable(), userMessage: z.string().min(1).max(8000) }).parse(d))
+  .inputValidator((d: { conversationId: string | null; userMessage: string; mode?: "fast" | "reasoning" }) =>
+    z.object({ conversationId: z.string().uuid().nullable(), userMessage: z.string().min(1).max(8000), mode: z.enum(["fast", "reasoning"]).optional() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     let convId = data.conversationId;
@@ -42,7 +42,11 @@ export const xaiChat = createServerFn({ method: "POST" })
     const messages = [...(history ?? []).map((m: any) => ({ role: m.role, content: m.content })), { role: "user", content: data.userMessage }];
     // store user msg
     await supabase.from("ai_messages").insert({ conversation_id: convId, user_id: userId, role: "user", content: data.userMessage });
-    const reply = await callGateway(messages);
+    const model = data.mode === "reasoning" ? "google/gemini-3-pro-preview" : "google/gemini-3-flash-preview";
+    const system = data.mode === "reasoning"
+      ? SYSTEM_PROMPT + " Think carefully step-by-step before answering. Show clear reasoning when it helps."
+      : SYSTEM_PROMPT;
+    const reply = await callGateway(messages, system, model);
     if (!reply) throw new Error("No reply from XAI");
     await supabase.from("ai_messages").insert({ conversation_id: convId, user_id: userId, role: "assistant", content: reply });
     await supabase.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", convId);
