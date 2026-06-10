@@ -52,7 +52,7 @@ function AuthPage() {
           },
         });
         if (error) { toast.error(error.message); return; }
-        toast.success("Welcome to Axion6— your calm café awaits ☕");
+        toast.success("Welcome to Axion6— your calm café awaits ☕ Please check your inbox to verify your email.");
         navigate({ to: "/home", replace: true });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
