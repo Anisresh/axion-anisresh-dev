@@ -24,6 +24,7 @@ function XaiPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"fast" | "reasoning">("fast");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const loadConvs = async () => {
