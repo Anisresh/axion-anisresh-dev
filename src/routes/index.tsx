@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Sparkles, MessageCircle, GraduationCap, Timer, Shield, ArrowRight } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { LandingExtras } from "@/components/LandingExtras";
+import { WorkspaceShowcase } from "@/components/WorkspaceShowcase";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -106,6 +107,7 @@ export default function Landing() {
         </div>
       </section>
 
+      <WorkspaceShowcase />
       <LandingExtras />
       <Footer />
     </div>
