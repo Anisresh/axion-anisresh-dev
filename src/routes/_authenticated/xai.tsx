@@ -47,7 +47,7 @@ function XaiPage() {
     setText(""); setLoading(true);
     setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", content: userMsg, created_at: new Date().toISOString() }]);
     try {
-      const res = await chat({ data: { conversationId: active, userMessage: userMsg } });
+      const res = await chat({ data: { conversationId: active, userMessage: userMsg, mode } });
       setActive(res.conversationId);
       setMessages((m) => [...m, { id: crypto.randomUUID(), role: "assistant", content: res.reply, created_at: new Date().toISOString() }]);
       loadConvs();
