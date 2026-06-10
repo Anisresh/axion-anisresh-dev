@@ -104,9 +104,30 @@ function XaiPage() {
           </div>
         </div>
         <div className="border-t border-border/60 p-4">
-          <div className="max-w-3xl mx-auto flex items-end gap-2">
-            <textarea value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }} placeholder="Ask XAI anything…" rows={1} disabled={loading} className="flex-1 resize-none px-4 py-3 rounded-2xl bg-input/60 border border-border focus:outline-none focus:ring-2 focus:ring-ring/40 text-sm max-h-40 disabled:opacity-60" />
-            <button onClick={send} disabled={loading || !text.trim()} className="size-11 rounded-2xl bg-primary-gradient text-primary-foreground grid place-items-center shadow-glow hover:opacity-90 transition-soft disabled:opacity-50"><Send className="size-5" /></button>
+          <div className="max-w-3xl mx-auto space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground mr-1">Mode:</span>
+              <button
+                type="button"
+                onClick={() => setMode("fast")}
+                className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-medium transition-soft border ${mode === "fast" ? "bg-primary-gradient text-primary-foreground border-transparent shadow-glow" : "bg-card border-border/60 text-muted-foreground hover:text-foreground"}`}
+                title="Faster replies, lighter thinking"
+              >
+                <Zap className="size-3.5" /> Faster
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("reasoning")}
+                className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-medium transition-soft border ${mode === "reasoning" ? "bg-primary-gradient text-primary-foreground border-transparent shadow-glow" : "bg-card border-border/60 text-muted-foreground hover:text-foreground"}`}
+                title="Smarter, deeper reasoning (slower)"
+              >
+                <Brain className="size-3.5" /> Reasoning
+              </button>
+            </div>
+            <div className="flex items-end gap-2">
+              <textarea value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }} placeholder="Ask XAI anything…" rows={1} disabled={loading} className="flex-1 resize-none px-4 py-3 rounded-2xl bg-input/60 border border-border focus:outline-none focus:ring-2 focus:ring-ring/40 text-sm max-h-40 disabled:opacity-60" />
+              <button onClick={send} disabled={loading || !text.trim()} className="size-11 rounded-2xl bg-primary-gradient text-primary-foreground grid place-items-center shadow-glow hover:opacity-90 transition-soft disabled:opacity-50"><Send className="size-5" /></button>
+            </div>
           </div>
         </div>
       </section>
