@@ -395,27 +395,22 @@ export default function WorkspacePage() {
         </div>
       </section>
 
-      {/* Pricing / Payment */}
+      {/* Free CTA */}
       <section className="px-6 md:px-10 pb-24 max-w-3xl mx-auto w-full">
         <div className="relative overflow-hidden rounded-[2rem] border border-border/60 bg-hero p-10 md:p-14 text-center shadow-elevated">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight">Ready to start?</h2>
           <p className="mt-4 text-muted-foreground">
-            Start free, or contact us to onboard your organization.
+            Every workspace, every feature — completely free.
           </p>
-          <div className="mt-6 inline-flex flex-col items-center gap-1 px-5 py-4 rounded-2xl glass border border-border/60">
-            <span className="text-xs uppercase tracking-wider text-muted-foreground">Payments / UPI</span>
-            <span className="text-lg font-semibold tracking-tight">+91 9048088397</span>
-          </div>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             <Link to="/auth" search={{ mode: "signup" }} className="inline-flex h-12 px-7 items-center gap-2 rounded-2xl bg-primary-gradient text-primary-foreground font-medium shadow-glow hover:opacity-90 transition-soft">
-              Start Free Trial <ArrowRight className="size-4" />
+              Create your workspace <ArrowRight className="size-4" />
             </Link>
-            <a href="mailto:anisreshar@gmail.com" className="inline-flex h-12 px-6 items-center rounded-2xl glass border border-border/60 font-medium hover:bg-card transition-soft">
-              Contact Sales
-            </a>
           </div>
+          <p className="mt-4 text-xs text-muted-foreground/80">No credit card · No paid tiers</p>
         </div>
       </section>
+
 
       <Footer />
     </div>
