@@ -21,35 +21,38 @@ export const Route = createFileRoute("/workspace")({
 
 const teacherFeatures = [
   "AI lesson plans", "Worksheets", "Question papers", "Automatic answer keys",
-  "Assignment creation", "Homework management", "Attendance tracking",
-  "Student progress tracking", "Gradebook", "Timetable management",
-  "Parent communication", "AI report card generation", "AI explanation generator",
-  "Classroom announcements", "Shared resources", "Exam planner",
-  "Flashcard generator", "Quiz generator", "AI presentations",
-  "AI image generation", "AI video lessons", "Shared teacher workspace",
+  "Assignment creation", "Attendance tracking", "Student profiles & logins",
+  "Gradebook", "Parent communication", "AI report cards",
+  "Classroom announcements", "Exam planner", "Quiz generator", "AI presentations",
+];
+
+const studentFeatures = [
+  "Today's classes", "Homework & assignments", "AI Tutor",
+  "Smart notes", "Flashcards", "Study planner", "Exam mode",
+  "Practice tests", "Confidence tracker", "Weak-topic insights",
+];
+
+const parentFeatures = [
+  "Live attendance", "Grades & report cards", "Homework status",
+  "Upcoming exams & events", "Message teachers", "Book appointments",
+  "Performance trends", "Emergency alerts", "Parent AI assistant",
+];
+
+const friendsFeatures = [
+  "Shared chat & voice rooms", "Shared notes & whiteboard", "Shared calendar",
+  "Polls & countdowns", "Movie & travel planner", "Expense splitter",
+  "Birthday reminders", "Group AI assistant", "Shared playlists",
 ];
 
 const businessFeatures = [
-  "Team workspace", "Shared AI assistant", "Department management",
-  "Employee directory", "Attendance tracking", "Expense management",
-  "Leave management", "Payroll document storage", "AI meeting summaries",
-  "Internal chat", "Google Meet integration", "Project management",
-  "Task management", "Shared calendars", "Shared files",
-  "Document collaboration", "Company announcements", "Analytics dashboard",
-  "Activity logs", "Admin controls", "Permission management",
-  "AI report generation", "AI email generation", "AI presentations",
-  "AI coding assistant", "API integrations", "Workflow automation",
-  "Knowledge management",
+  "Team workspace", "Departments (HR, Finance, …)", "Project Kanban",
+  "Tasks & deadlines", "Expense management", "AI meeting summaries",
+  "Knowledge base with RAG", "Google Meet integration", "Analytics dashboard",
+  "Permission management", "Activity logs", "AI reports & emails",
 ];
 
-const groupFeatures = [
-  "Shared notes", "Shared AI", "Shared storage", "Shared projects",
-  "Shared whiteboard", "Shared calendar", "Shared reminders", "Shared tasks",
-  "Shared files", "Shared chats", "Polls", "Announcements",
-  "Wiki pages", "Templates", "Version history", "Activity feed",
-];
+const groupFor = ["Friends", "Clubs", "NGOs", "Developers", "Startups", "Families"];
 
-const groupFor = ["Friends", "Clubs", "NGOs", "Developers", "Designers", "Startups", "Research teams", "Families"];
 
 function FeatureList({ items }: { items: string[] }) {
   return (
@@ -199,43 +202,57 @@ export default function WorkspacePage() {
             </p>
             <div className="mt-10 flex flex-wrap gap-3 justify-center">
               <Link to="/auth" search={{ mode: "signup" }} className="inline-flex h-12 px-6 items-center gap-2 rounded-2xl bg-primary-gradient text-primary-foreground font-medium shadow-glow hover:opacity-90 transition-soft">
-                Start Free Trial <ArrowRight className="size-4" />
+                Get started — it's free <ArrowRight className="size-4" />
               </Link>
-              <a href="mailto:anisreshar@gmail.com" className="inline-flex h-12 px-6 items-center rounded-2xl glass border border-border/60 font-medium hover:bg-card transition-soft">
-                Contact Sales
-              </a>
+              <Link to="/" className="inline-flex h-12 px-6 items-center rounded-2xl glass border border-border/60 font-medium hover:bg-card transition-soft">
+                Back to Axion
+              </Link>
             </div>
+            <p className="mt-4 text-xs text-muted-foreground/80">100% free · No credit card · Separate from Axion</p>
+
           </motion.div>
         </div>
       </section>
 
-      {/* Three Workspace Types */}
+      {/* Five Workspace Types */}
       <section className="px-6 md:px-10 pb-24 max-w-7xl mx-auto w-full">
-        <SectionHeader eyebrow="Three ways to work" title="One workspace, every kind of team" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <SectionHeader
+          eyebrow="One Platform. Unlimited Workspaces."
+          title="A workspace for every kind of team"
+          subtitle="Collaborate with AI, manage projects, attend meetings, share files, and stay connected from anywhere."
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <WorkspaceCard
             icon={GraduationCap}
             emoji="🎓"
-            title="Axion for Teachers"
-            description="An intelligent platform designed for teachers, schools, coaching centers, and educational institutions."
+            title="Teacher Workspace"
+            description="For schools, tuition centers, and educators. Create student profiles, run classes, and let AI handle the busywork."
             features={teacherFeatures}
-            button="Start Teaching"
+            button="Create Teacher Space"
           />
           <WorkspaceCard
-            icon={Building2}
-            emoji="🏢"
-            title="Axion for Business"
-            description="A complete AI operating system for startups, companies, organizations, and enterprises."
-            features={businessFeatures}
-            button="Start Business"
+            icon={BookOpen}
+            emoji="📚"
+            title="Student Workspace"
+            description="Sign in with the username your teacher creates. Get an AI tutor, smart notes, planner and exam mode."
+            features={studentFeatures}
+            button="Join as Student"
+          />
+          <WorkspaceCard
+            icon={Users}
+            emoji="👨‍👩‍👧"
+            title="Parent Workspace"
+            description="Monitor attendance, grades, fees, and events. Message teachers and book appointments in one place."
+            features={parentFeatures}
+            button="Open Parent Space"
           />
           <WorkspaceCard
             icon={Users}
             emoji="👥"
-            title="Axion Workspace"
-            description="Create a shared digital workspace for any group."
-            features={groupFeatures}
-            button="Create Workspace"
+            title="Friends Workspace"
+            description="A private collaborative space for your group — chats, plans, voice rooms, polls and a shared AI."
+            features={friendsFeatures}
+            button="Create with Friends"
             extra={
               <div className="mt-4">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Perfect for</p>
@@ -247,8 +264,46 @@ export default function WorkspacePage() {
               </div>
             }
           />
+          <WorkspaceCard
+            icon={Building2}
+            emoji="🏢"
+            title="Business Workspace"
+            description="A complete AI operating system for startups, companies, and enterprises. Departments, projects, knowledge & analytics."
+            features={businessFeatures}
+            button="Start Business"
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="relative overflow-hidden rounded-3xl border border-border/60 bg-hero p-7 shadow-soft flex flex-col justify-between"
+          >
+            <div>
+              <div className="size-12 rounded-2xl bg-primary/10 text-primary grid place-items-center text-2xl">✨</div>
+              <h3 className="mt-4 text-xl font-semibold tracking-tight">Create your own</h3>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                Name it, pick a logo, cover, theme, and privacy
+                <span className="block mt-2 text-xs">Public · Private · Invite only · Organization only</span>
+              </p>
+              <ul className="mt-4 grid gap-1.5 text-xs text-muted-foreground">
+                <li>• Shared AI, storage, calendar, notes, tasks</li>
+                <li>• Whiteboard, files, announcements, templates</li>
+                <li>• Activity timeline, search, notifications</li>
+                <li>• Roles: Owner → Admin → Moderator → Member → Guest</li>
+              </ul>
+            </div>
+            <Link
+              to="/auth"
+              search={{ mode: "signup" }}
+              className="mt-6 inline-flex h-11 px-5 items-center justify-center gap-2 rounded-2xl glass border border-border/60 font-medium hover:bg-card transition-soft"
+            >
+              Create Workspace <ArrowRight className="size-4" />
+            </Link>
+          </motion.div>
         </div>
       </section>
+
 
       {/* Analytics Dashboard */}
       <section className="px-6 md:px-10 pb-24 max-w-7xl mx-auto w-full">
@@ -340,27 +395,22 @@ export default function WorkspacePage() {
         </div>
       </section>
 
-      {/* Pricing / Payment */}
+      {/* Free CTA */}
       <section className="px-6 md:px-10 pb-24 max-w-3xl mx-auto w-full">
         <div className="relative overflow-hidden rounded-[2rem] border border-border/60 bg-hero p-10 md:p-14 text-center shadow-elevated">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight">Ready to start?</h2>
           <p className="mt-4 text-muted-foreground">
-            Start free, or contact us to onboard your organization.
+            Every workspace, every feature — completely free.
           </p>
-          <div className="mt-6 inline-flex flex-col items-center gap-1 px-5 py-4 rounded-2xl glass border border-border/60">
-            <span className="text-xs uppercase tracking-wider text-muted-foreground">Payments / UPI</span>
-            <span className="text-lg font-semibold tracking-tight">+91 9048088397</span>
-          </div>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             <Link to="/auth" search={{ mode: "signup" }} className="inline-flex h-12 px-7 items-center gap-2 rounded-2xl bg-primary-gradient text-primary-foreground font-medium shadow-glow hover:opacity-90 transition-soft">
-              Start Free Trial <ArrowRight className="size-4" />
+              Create your workspace <ArrowRight className="size-4" />
             </Link>
-            <a href="mailto:anisreshar@gmail.com" className="inline-flex h-12 px-6 items-center rounded-2xl glass border border-border/60 font-medium hover:bg-card transition-soft">
-              Contact Sales
-            </a>
           </div>
+          <p className="mt-4 text-xs text-muted-foreground/80">No credit card · No paid tiers</p>
         </div>
       </section>
+
 
       <Footer />
     </div>
