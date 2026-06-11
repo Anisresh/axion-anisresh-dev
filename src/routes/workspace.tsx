@@ -212,33 +212,45 @@ export default function WorkspacePage() {
         </div>
       </section>
 
-      {/* Three Workspace Types */}
+      {/* Five Workspace Types */}
       <section className="px-6 md:px-10 pb-24 max-w-7xl mx-auto w-full">
-        <SectionHeader eyebrow="Three ways to work" title="One workspace, every kind of team" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <SectionHeader
+          eyebrow="One Platform. Unlimited Workspaces."
+          title="A workspace for every kind of team"
+          subtitle="Collaborate with AI, manage projects, attend meetings, share files, and stay connected from anywhere."
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <WorkspaceCard
             icon={GraduationCap}
             emoji="🎓"
-            title="Axion for Teachers"
-            description="An intelligent platform designed for teachers, schools, coaching centers, and educational institutions."
+            title="Teacher Workspace"
+            description="For schools, tuition centers, and educators. Create student profiles, run classes, and let AI handle the busywork."
             features={teacherFeatures}
-            button="Start Teaching"
+            button="Create Teacher Space"
           />
           <WorkspaceCard
-            icon={Building2}
-            emoji="🏢"
-            title="Axion for Business"
-            description="A complete AI operating system for startups, companies, organizations, and enterprises."
-            features={businessFeatures}
-            button="Start Business"
+            icon={BookOpen}
+            emoji="📚"
+            title="Student Workspace"
+            description="Sign in with the username your teacher creates. Get an AI tutor, smart notes, planner and exam mode."
+            features={studentFeatures}
+            button="Join as Student"
+          />
+          <WorkspaceCard
+            icon={Users}
+            emoji="👨‍👩‍👧"
+            title="Parent Workspace"
+            description="Monitor attendance, grades, fees, and events. Message teachers and book appointments in one place."
+            features={parentFeatures}
+            button="Open Parent Space"
           />
           <WorkspaceCard
             icon={Users}
             emoji="👥"
-            title="Axion Workspace"
-            description="Create a shared digital workspace for any group."
-            features={groupFeatures}
-            button="Create Workspace"
+            title="Friends Workspace"
+            description="A private collaborative space for your group — chats, plans, voice rooms, polls and a shared AI."
+            features={friendsFeatures}
+            button="Create with Friends"
             extra={
               <div className="mt-4">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Perfect for</p>
@@ -250,8 +262,46 @@ export default function WorkspacePage() {
               </div>
             }
           />
+          <WorkspaceCard
+            icon={Building2}
+            emoji="🏢"
+            title="Business Workspace"
+            description="A complete AI operating system for startups, companies, and enterprises. Departments, projects, knowledge & analytics."
+            features={businessFeatures}
+            button="Start Business"
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="relative overflow-hidden rounded-3xl border border-border/60 bg-hero p-7 shadow-soft flex flex-col justify-between"
+          >
+            <div>
+              <div className="size-12 rounded-2xl bg-primary/10 text-primary grid place-items-center text-2xl">✨</div>
+              <h3 className="mt-4 text-xl font-semibold tracking-tight">Create your own</h3>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                Name it, pick a logo, cover, theme, and privacy
+                <span className="block mt-2 text-xs">Public · Private · Invite only · Organization only</span>
+              </p>
+              <ul className="mt-4 grid gap-1.5 text-xs text-muted-foreground">
+                <li>• Shared AI, storage, calendar, notes, tasks</li>
+                <li>• Whiteboard, files, announcements, templates</li>
+                <li>• Activity timeline, search, notifications</li>
+                <li>• Roles: Owner → Admin → Moderator → Member → Guest</li>
+              </ul>
+            </div>
+            <Link
+              to="/auth"
+              search={{ mode: "signup" }}
+              className="mt-6 inline-flex h-11 px-5 items-center justify-center gap-2 rounded-2xl glass border border-border/60 font-medium hover:bg-card transition-soft"
+            >
+              Create Workspace <ArrowRight className="size-4" />
+            </Link>
+          </motion.div>
         </div>
       </section>
+
 
       {/* Analytics Dashboard */}
       <section className="px-6 md:px-10 pb-24 max-w-7xl mx-auto w-full">
