@@ -100,12 +100,12 @@ function WorkspaceCard({
       {extra}
       <FeatureList items={features} />
       <Link
-        to="/auth"
-        search={{ mode: "signup" }}
+        to="/workspaces"
         className="mt-6 inline-flex h-11 px-5 items-center justify-center gap-2 rounded-2xl bg-primary-gradient text-primary-foreground font-medium shadow-glow hover:opacity-90 transition-soft"
       >
         {button} <ArrowRight className="size-4" />
       </Link>
+
     </motion.div>
   );
 }
