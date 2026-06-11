@@ -202,12 +202,14 @@ export default function WorkspacePage() {
             </p>
             <div className="mt-10 flex flex-wrap gap-3 justify-center">
               <Link to="/auth" search={{ mode: "signup" }} className="inline-flex h-12 px-6 items-center gap-2 rounded-2xl bg-primary-gradient text-primary-foreground font-medium shadow-glow hover:opacity-90 transition-soft">
-                Start Free Trial <ArrowRight className="size-4" />
+                Get started — it's free <ArrowRight className="size-4" />
               </Link>
-              <a href="mailto:anisreshar@gmail.com" className="inline-flex h-12 px-6 items-center rounded-2xl glass border border-border/60 font-medium hover:bg-card transition-soft">
-                Contact Sales
-              </a>
+              <Link to="/" className="inline-flex h-12 px-6 items-center rounded-2xl glass border border-border/60 font-medium hover:bg-card transition-soft">
+                Back to Axion
+              </Link>
             </div>
+            <p className="mt-4 text-xs text-muted-foreground/80">100% free · No credit card · Separate from Axion</p>
+
           </motion.div>
         </div>
       </section>
