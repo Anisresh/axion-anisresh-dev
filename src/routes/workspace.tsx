@@ -294,12 +294,12 @@ export default function WorkspacePage() {
               </ul>
             </div>
             <Link
-              to="/auth"
-              search={{ mode: "signup" }}
+              to="/workspaces"
               className="mt-6 inline-flex h-11 px-5 items-center justify-center gap-2 rounded-2xl glass border border-border/60 font-medium hover:bg-card transition-soft"
             >
               Create Workspace <ArrowRight className="size-4" />
             </Link>
+
           </motion.div>
         </div>
       </section>
