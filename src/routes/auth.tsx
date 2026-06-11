@@ -143,7 +143,35 @@ function AuthPage() {
               </button>
             </p>
           </div>
+
+          {/* Axion Workspaces CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="mt-6 relative overflow-hidden rounded-[28px] border border-border/60 bg-card-gradient p-7 text-center shadow-soft"
+          >
+            <div className="absolute inset-0 -z-10 bg-hero opacity-60" />
+            <div className="inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-[11px] font-medium text-muted-foreground">
+              ✨ New
+            </div>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight">Axion Workspaces</h2>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+              Create or join a powerful AI Workspace
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground/80">
+              For Schools • Families • Friends • Teams • Businesses
+            </p>
+            <Link
+              to="/workspace"
+              className="mt-5 inline-flex h-10 px-5 items-center gap-2 rounded-2xl bg-primary-gradient text-primary-foreground text-sm font-medium shadow-glow hover:opacity-90 transition-soft"
+            >
+              Explore →
+            </Link>
+            <p className="mt-3 text-[11px] text-muted-foreground/70">100% free · separate from Axion</p>
+          </motion.div>
         </motion.div>
+
       </main>
 
       <Footer />
