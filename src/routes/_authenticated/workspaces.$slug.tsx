@@ -101,7 +101,7 @@ function WorkspaceDashboard() {
 }
 
 type TabProps = { ws: Workspace; members: Member[] };
-type Tab = { id: string; label: string; icon: typeof Bot; component: (p: TabProps) => JSX.Element };
+type Tab = { id: string; label: string; icon: typeof Bot; component: (p: TabProps) => React.ReactElement };
 
 function getTabsForType(type: Workspace["type"]): Tab[] {
   const common: Tab[] = [
