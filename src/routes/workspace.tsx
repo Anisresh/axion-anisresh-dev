@@ -173,7 +173,7 @@ export default function WorkspacePage() {
           <Link to="/" className="hidden sm:inline-flex h-10 px-4 items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-soft">
             Back to Axion
           </Link>
-          <Link to="/auth" search={{ mode: "signup" }} className="inline-flex h-10 px-5 items-center rounded-2xl bg-primary-gradient text-primary-foreground text-sm font-medium shadow-glow hover:opacity-90 transition-soft">
+          <Link to="/workspaces" className="inline-flex h-10 px-5 items-center rounded-2xl bg-primary-gradient text-primary-foreground text-sm font-medium shadow-glow hover:opacity-90 transition-soft">
             Get started
           </Link>
         </nav>
@@ -201,7 +201,7 @@ export default function WorkspacePage() {
               Manage teams, classrooms, projects, knowledge, meetings, documents, and AI assistants from one secure platform.
             </p>
             <div className="mt-10 flex flex-wrap gap-3 justify-center">
-              <Link to="/auth" search={{ mode: "signup" }} className="inline-flex h-12 px-6 items-center gap-2 rounded-2xl bg-primary-gradient text-primary-foreground font-medium shadow-glow hover:opacity-90 transition-soft">
+              <Link to="/workspaces" className="inline-flex h-12 px-6 items-center gap-2 rounded-2xl bg-primary-gradient text-primary-foreground font-medium shadow-glow hover:opacity-90 transition-soft">
                 Get started — it's free <ArrowRight className="size-4" />
               </Link>
               <Link to="/" className="inline-flex h-12 px-6 items-center rounded-2xl glass border border-border/60 font-medium hover:bg-card transition-soft">
@@ -403,7 +403,7 @@ export default function WorkspacePage() {
             Every workspace, every feature — completely free.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
-            <Link to="/auth" search={{ mode: "signup" }} className="inline-flex h-12 px-7 items-center gap-2 rounded-2xl bg-primary-gradient text-primary-foreground font-medium shadow-glow hover:opacity-90 transition-soft">
+            <Link to="/workspaces" className="inline-flex h-12 px-7 items-center gap-2 rounded-2xl bg-primary-gradient text-primary-foreground font-medium shadow-glow hover:opacity-90 transition-soft">
               Create your workspace <ArrowRight className="size-4" />
             </Link>
           </div>
