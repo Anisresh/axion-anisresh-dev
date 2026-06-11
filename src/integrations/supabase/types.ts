@@ -473,18 +473,112 @@ export type Database = {
         }
         Relationships: []
       }
+      workspace_members: {
+        Row: {
+          id: string
+          joined_at: string
+          role: Database["public"]["Enums"]["workspace_role"]
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["workspace_role"]
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["workspace_role"]
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          emoji: string | null
+          id: string
+          name: string
+          owner_id: string
+          privacy: Database["public"]["Enums"]["workspace_privacy"]
+          slug: string
+          theme: string | null
+          type: Database["public"]["Enums"]["workspace_type"]
+          updated_at: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          privacy?: Database["public"]["Enums"]["workspace_privacy"]
+          slug: string
+          theme?: string | null
+          type?: Database["public"]["Enums"]["workspace_type"]
+          updated_at?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          privacy?: Database["public"]["Enums"]["workspace_privacy"]
+          slug?: string
+          theme?: string | null
+          type?: Database["public"]["Enums"]["workspace_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       are_friends: { Args: { a: string; b: string }; Returns: boolean }
+      is_workspace_member: {
+        Args: { _user: string; _workspace: string }
+        Returns: boolean
+      }
       purge_expired_messages: { Args: never; Returns: undefined }
+      workspace_role_of: {
+        Args: { _user: string; _workspace: string }
+        Returns: Database["public"]["Enums"]["workspace_role"]
+      }
     }
     Enums: {
       conversation_kind: "dm" | "group"
       friendship_status: "pending" | "accepted" | "blocked"
       message_kind: "text" | "image" | "voice" | "file"
+      workspace_privacy: "public" | "private" | "invite" | "organization"
+      workspace_role: "owner" | "admin" | "moderator" | "member" | "guest"
+      workspace_type:
+        | "teacher"
+        | "student"
+        | "parent"
+        | "friends"
+        | "business"
+        | "custom"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -615,6 +709,16 @@ export const Constants = {
       conversation_kind: ["dm", "group"],
       friendship_status: ["pending", "accepted", "blocked"],
       message_kind: ["text", "image", "voice", "file"],
+      workspace_privacy: ["public", "private", "invite", "organization"],
+      workspace_role: ["owner", "admin", "moderator", "member", "guest"],
+      workspace_type: [
+        "teacher",
+        "student",
+        "parent",
+        "friends",
+        "business",
+        "custom",
+      ],
     },
   },
 } as const
