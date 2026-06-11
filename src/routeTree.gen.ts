@@ -24,6 +24,8 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
 import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
 import { Route as AuthenticatedFocusRouteImport } from './routes/_authenticated/focus'
+import { Route as AuthenticatedWorkspacesIndexRouteImport } from './routes/_authenticated/workspaces.index'
+import { Route as AuthenticatedWorkspacesSlugRouteImport } from './routes/_authenticated/workspaces.$slug'
 
 const WorkspaceRoute = WorkspaceRouteImport.update({
   id: '/workspace',
@@ -99,6 +101,18 @@ const AuthenticatedFocusRoute = AuthenticatedFocusRouteImport.update({
   path: '/focus',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedWorkspacesIndexRoute =
+  AuthenticatedWorkspacesIndexRouteImport.update({
+    id: '/workspaces/',
+    path: '/workspaces/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkspacesSlugRoute =
+  AuthenticatedWorkspacesSlugRouteImport.update({
+    id: '/workspaces/$slug',
+    path: '/workspaces/$slug',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -115,6 +129,8 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/xai': typeof AuthenticatedXaiRoute
+  '/workspaces/$slug': typeof AuthenticatedWorkspacesSlugRoute
+  '/workspaces/': typeof AuthenticatedWorkspacesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -131,6 +147,8 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/xai': typeof AuthenticatedXaiRoute
+  '/workspaces/$slug': typeof AuthenticatedWorkspacesSlugRoute
+  '/workspaces': typeof AuthenticatedWorkspacesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -149,6 +167,8 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/xai': typeof AuthenticatedXaiRoute
+  '/_authenticated/workspaces/$slug': typeof AuthenticatedWorkspacesSlugRoute
+  '/_authenticated/workspaces/': typeof AuthenticatedWorkspacesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -167,6 +187,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/xai'
+    | '/workspaces/$slug'
+    | '/workspaces/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -183,6 +205,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/xai'
+    | '/workspaces/$slug'
+    | '/workspaces'
   id:
     | '__root__'
     | '/'
@@ -200,6 +224,8 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/users'
     | '/_authenticated/xai'
+    | '/_authenticated/workspaces/$slug'
+    | '/_authenticated/workspaces/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -318,6 +344,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFocusRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/workspaces/': {
+      id: '/_authenticated/workspaces/'
+      path: '/workspaces'
+      fullPath: '/workspaces/'
+      preLoaderRoute: typeof AuthenticatedWorkspacesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/workspaces/$slug': {
+      id: '/_authenticated/workspaces/$slug'
+      path: '/workspaces/$slug'
+      fullPath: '/workspaces/$slug'
+      preLoaderRoute: typeof AuthenticatedWorkspacesSlugRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -331,6 +371,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedXaiRoute: typeof AuthenticatedXaiRoute
+  AuthenticatedWorkspacesSlugRoute: typeof AuthenticatedWorkspacesSlugRoute
+  AuthenticatedWorkspacesIndexRoute: typeof AuthenticatedWorkspacesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -343,6 +385,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedXaiRoute: AuthenticatedXaiRoute,
+  AuthenticatedWorkspacesSlugRoute: AuthenticatedWorkspacesSlugRoute,
+  AuthenticatedWorkspacesIndexRoute: AuthenticatedWorkspacesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -359,3 +403,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
