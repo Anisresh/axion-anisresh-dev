@@ -21,35 +21,38 @@ export const Route = createFileRoute("/workspace")({
 
 const teacherFeatures = [
   "AI lesson plans", "Worksheets", "Question papers", "Automatic answer keys",
-  "Assignment creation", "Homework management", "Attendance tracking",
-  "Student progress tracking", "Gradebook", "Timetable management",
-  "Parent communication", "AI report card generation", "AI explanation generator",
-  "Classroom announcements", "Shared resources", "Exam planner",
-  "Flashcard generator", "Quiz generator", "AI presentations",
-  "AI image generation", "AI video lessons", "Shared teacher workspace",
+  "Assignment creation", "Attendance tracking", "Student profiles & logins",
+  "Gradebook", "Parent communication", "AI report cards",
+  "Classroom announcements", "Exam planner", "Quiz generator", "AI presentations",
+];
+
+const studentFeatures = [
+  "Today's classes", "Homework & assignments", "AI Tutor",
+  "Smart notes", "Flashcards", "Study planner", "Exam mode",
+  "Practice tests", "Confidence tracker", "Weak-topic insights",
+];
+
+const parentFeatures = [
+  "Live attendance", "Grades & report cards", "Homework status",
+  "Upcoming exams & events", "Message teachers", "Book appointments",
+  "Performance trends", "Emergency alerts", "Parent AI assistant",
+];
+
+const friendsFeatures = [
+  "Shared chat & voice rooms", "Shared notes & whiteboard", "Shared calendar",
+  "Polls & countdowns", "Movie & travel planner", "Expense splitter",
+  "Birthday reminders", "Group AI assistant", "Shared playlists",
 ];
 
 const businessFeatures = [
-  "Team workspace", "Shared AI assistant", "Department management",
-  "Employee directory", "Attendance tracking", "Expense management",
-  "Leave management", "Payroll document storage", "AI meeting summaries",
-  "Internal chat", "Google Meet integration", "Project management",
-  "Task management", "Shared calendars", "Shared files",
-  "Document collaboration", "Company announcements", "Analytics dashboard",
-  "Activity logs", "Admin controls", "Permission management",
-  "AI report generation", "AI email generation", "AI presentations",
-  "AI coding assistant", "API integrations", "Workflow automation",
-  "Knowledge management",
+  "Team workspace", "Departments (HR, Finance, …)", "Project Kanban",
+  "Tasks & deadlines", "Expense management", "AI meeting summaries",
+  "Knowledge base with RAG", "Google Meet integration", "Analytics dashboard",
+  "Permission management", "Activity logs", "AI reports & emails",
 ];
 
-const groupFeatures = [
-  "Shared notes", "Shared AI", "Shared storage", "Shared projects",
-  "Shared whiteboard", "Shared calendar", "Shared reminders", "Shared tasks",
-  "Shared files", "Shared chats", "Polls", "Announcements",
-  "Wiki pages", "Templates", "Version history", "Activity feed",
-];
+const groupFor = ["Friends", "Clubs", "NGOs", "Developers", "Startups", "Families"];
 
-const groupFor = ["Friends", "Clubs", "NGOs", "Developers", "Designers", "Startups", "Research teams", "Families"];
 
 function FeatureList({ items }: { items: string[] }) {
   return (
